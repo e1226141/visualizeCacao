@@ -1,0 +1,24 @@
+General:
+
+mkdir visualizeCacao
+npm init
+npm i -D electron --save--exact
+npm i -D vis --save--exact
+npm install -g typescript
+npm install -g tslint
+
+
+
+Links:
+https://electron.atom.io/docs/tutorial/quick-start/
+https://www.sitepoint.com/beginners-guide-node-package-manager/
+https://narayanatechnicalworld.blogspot.co.at/2016/05/what-is-tslint.html
+
+troubles typescript & electtron:
+https://github.com/electron/electron/issues/10151
+
+
+
+
+JSON to TS: 
+http://json2ts.com/
