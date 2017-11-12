@@ -15,11 +15,17 @@ if (isDevMode) {
 }
 
 const createWindow = async () => {
+
+  let data = fs.readFileSync('xyz.json', 'utf8');
+  let jsonData = JSON.parse(data);
+  let optimizedMethod = new OptimizedMethod().fromJson(jsonData);
+
+  let title = 'visualize CACAO JVM: ' + optimizedMethod.class + '.' + optimizedMethod.method + '(' + optimizedMethod.desc + ')';
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    title: 'visualize CACAO JVM'
+    title: title
   });
 
   // and load the index.html of the app.
@@ -38,10 +44,7 @@ const createWindow = async () => {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-
-  let data = fs.readFileSync('xyz.json', 'utf8');
-  let jsonData = JSON.parse(data);
-  mainWindow.optimizedMethod = new OptimizedMethod().fromJson(jsonData);
+  mainWindow.optimizedMethod = optimizedMethod;
 };
 
 // This method will be called when Electron has finished
