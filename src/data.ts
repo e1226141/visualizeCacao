@@ -50,9 +50,6 @@ export class Edge implements Serializable<Edge> {
     }
 }
 
-export type TransformNode = (n: Node) => any;
-export type TransformEdge = (e: Edge) => any;
-
 export class Pass implements Serializable<Pass> {
     name: string;
     nodes: Node[];
@@ -63,14 +60,6 @@ export class Pass implements Serializable<Pass> {
       this.nodes = input.nodes.map((node: any) => new Node().fromJSON(node));
       this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
       return this;
-    }
-
-    static toJSON = ( nodes: Node[], edges: Edge[], tn: TransformNode, te: TransformEdge): JSON => {
-      let graph: any = {
-        'nodes': nodes.map(tn),
-        'edges': edges.map(te)
-      };
-      return graph as JSON;
     }
 }
 
