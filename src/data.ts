@@ -2,19 +2,7 @@ export interface Serializable<T> {
   fromJSON(input: Object): T;
 }
 
-export interface INode {
-  id: number;
-  name: string;
-  type: string;
-  BB: number;
-  root?: boolean;
-  operands: number[];
-  value?: number;
-  condition: string;
-  sideEffects?: boolean;
-}
-
-export class Node implements Serializable<INode>, INode {
+export class Node implements Serializable<Node> {
     id: number;
     name: string;
     type: string;
@@ -37,16 +25,13 @@ export class Node implements Serializable<INode>, INode {
       this.sideEffects = input.sideEffects;
       return this;
     }
+
+    isCfgNode = (): boolean => {
+      return ['BeginInst', 'GOTOInst', 'RETURNInst', 'IFInst'].some(name => this.name === name );
+    }
 }
 
-export interface IEdge {
-  from: number;
-  to: number;
-  type: string;
-  trueBranch?: boolean;
-}
-
-export class Edge implements Serializable<IEdge>, IEdge {
+export class Edge implements Serializable<Edge> {
     from: number;
     to: number;
     type: string;
@@ -59,18 +44,19 @@ export class Edge implements Serializable<IEdge>, IEdge {
       this.trueBranch = input.trueBranch;
       return this;
     }
+
+    isCfgEdge = (): boolean => {
+      return ['cfg', 'bb'].some(type => this.type == type );
+    }
 }
 
-export interface IPass {
-  name: string;
-  nodes: INode[];
-  edges: IEdge[];
-}
+export type TransformNode = (n: Node) => any;
+export type TransformEdge = (e: Edge) => any;
 
-export class Pass implements Serializable<IPass>, IPass {
+export class Pass implements Serializable<Pass> {
     name: string;
-    nodes: INode[];
-    edges: IEdge[];
+    nodes: Node[];
+    edges: Edge[];
 
     fromJSON(input: any) {
       this.name = input.name;
@@ -78,20 +64,21 @@ export class Pass implements Serializable<IPass>, IPass {
       this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
       return this;
     }
+
+    static toJSON = ( nodes: Node[], edges: Edge[], tn: TransformNode, te: TransformEdge): JSON => {
+      let graph: any = {
+        'nodes': nodes.map(tn),
+        'edges': edges.map(te)
+      };
+      return graph as JSON;
+    }
 }
 
-export interface IOptimizedMethod {
-  class: string;
-  method: string;
-  desc: string;
-  passes: IPass[];
-}
-
-export class OptimizedMethod implements Serializable<IOptimizedMethod>, IOptimizedMethod {
+export class OptimizedMethod implements Serializable<OptimizedMethod> {
     class: string;
     method: string;
     desc: string;
-    passes: IPass[];
+    passes: Pass[];
 
     fromJSON(input: any) {
       this.class = input.class;

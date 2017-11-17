@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {IPass}  from '../data';
-import {PassListEntry}  from './passlist_entry';
+import { Pass }  from '../data';
+import { PassListEntry }  from './passlist_entry';
 import { v4 as uuid } from 'uuid';
 
 export interface IPassListProps {
-  passes: IPass[];
+  passes: Pass[];
   handleClick: (pass: IPass) => void;
 }
 

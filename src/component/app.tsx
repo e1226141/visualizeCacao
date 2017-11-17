@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { HIR } from './hir';
-import { IOptimizedMethod } from '../data';
+import { OptimizedMethod } from '../data';
 
 export interface AppProps {
-  optimizedMethod: IOptimizedMethod;
+  optimizedMethod: OptimizedMethod;
 }
 
 export class App extends React.Component<AppProps, {}> {

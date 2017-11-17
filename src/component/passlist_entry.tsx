@@ -15,9 +15,10 @@ export class PassListEntry extends React.Component<IPassListEntryProps, {}> {
   }
 
   render() {
+    const name = this.props.passName.slice(0, this.props.passName.lastIndexOf('Pass'));
     return (
       <button disabled={this.props.disabled} className={this.props.className} value={this.props.index} onClick={this.handleClick.bind(this)}>
-        {this.props.passName}
+        {name}
       </button>
     );
   }
