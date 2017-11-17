@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 import * as fs from 'fs';
@@ -18,7 +18,7 @@ const createWindow = async () => {
 
   let data = fs.readFileSync('xyz.json', 'utf8');
   let jsonData = JSON.parse(data);
-  let optimizedMethod = new OptimizedMethod().fromJson(jsonData);
+  let optimizedMethod = new OptimizedMethod().fromJSON(jsonData);
 
   let title = 'visualize CACAO JVM: ' + optimizedMethod.class + '.' + optimizedMethod.method + '(' + optimizedMethod.desc + ')';
   // Create the browser window.

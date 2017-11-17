@@ -6,13 +6,15 @@ export interface IControlFlowProps {
     pass: IPass;
 }
 
-// style='position: relative; touch-action: none; user-select: none; -webkit-user-drag: none;
-//  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); width: 100%; height: 100%;'
-
-//  style='position: relative; overflow: hidden; touch-action: pan-y; user-select: none;
-//  -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); width: 100%; height: 100%;'
-
 export class ControlFlow extends React.Component<IControlFlowProps, {}> {
+
+  toJSON = (): JSON => {
+    let graph: any = {
+      'nodes': this.props.pass.nodes.map(this.convertNode),
+      'edges': this.props.pass.edges.map(this.convertEdge)
+    };
+    return graph as JSON;
+  }
 
   convertNode(node: INode): any {
     return {
@@ -28,14 +30,6 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
       'to':  edge.to,
       'label': edge.type
       };
-  }
-
-  toGraph(pass: IPass): JSON {
-    let graph: any = {
-      'nodes': pass.nodes.map(this.convertNode),
-      'edges': pass.edges.map(this.convertEdge)
-    };
-    return graph as JSON;
   }
 
   getDefaultOptions(): JSON {
@@ -76,7 +70,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
   }
 
   render() {
-    const graph: JSON = this.toGraph(this.props.pass);
+    const graph: JSON = this.toJSON();
     const options: JSON = this.getDefaultOptions();
 
     const events = {

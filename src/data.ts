@@ -1,5 +1,5 @@
 export interface Serializable<T> {
-  fromJson(input: Object): T;
+  fromJSON(input: Object): T;
 }
 
 export interface INode {
@@ -25,7 +25,7 @@ export class Node implements Serializable<INode>, INode {
     condition: string;
     sideEffects?: boolean;
 
-    fromJson(input: any) {
+    fromJSON(input: any) {
       this.id = input.id;
       this.name = input.name;
       this.type = input.type;
@@ -52,7 +52,7 @@ export class Edge implements Serializable<IEdge>, IEdge {
     type: string;
     trueBranch?: boolean;
 
-    fromJson(input: any) {
+    fromJSON(input: any) {
       this.from = input.from;
       this.to = input.to;
       this.type = input.type;
@@ -72,10 +72,10 @@ export class Pass implements Serializable<IPass>, IPass {
     nodes: INode[];
     edges: IEdge[];
 
-    fromJson(input: any) {
+    fromJSON(input: any) {
       this.name = input.name;
-      this.nodes = input.nodes.map((node: any) => new Node().fromJson(node));
-      this.edges = input.edges.map((edge: any) => new Edge().fromJson(edge));
+      this.nodes = input.nodes.map((node: any) => new Node().fromJSON(node));
+      this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
       return this;
     }
 }
@@ -93,11 +93,11 @@ export class OptimizedMethod implements Serializable<IOptimizedMethod>, IOptimiz
     desc: string;
     passes: IPass[];
 
-    fromJson(input: any) {
+    fromJSON(input: any) {
       this.class = input.class;
       this.method = input.method;
       this.desc = input.desc;
-      this.passes = input.passes.map((pass: any) => new Pass().fromJson(pass));
+      this.passes = input.passes.map((pass: any) => new Pass().fromJSON(pass));
       return this;
     }
 }
