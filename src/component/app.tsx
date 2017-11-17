@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Title } from './title';
 import { PassList } from './passlist';
 import { ControlFlow } from './control_flow';
 import { IOptimizedMethod, IPass } from '../data';
@@ -22,10 +21,11 @@ export class App extends React.Component<AppProps, AppState> {
     this.setState({selectedPass: newPass});
   }
 
+  // <Title value={this.props.optimizedMethod.method} />
+
   render() {
     return (
-      <div>
-        <Title value={this.props.optimizedMethod.method} />
+      <div className='grid'>
         <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: IPass) => this.setSelectedPass(pass) } />
         <ControlFlow pass={this.state.selectedPass}></ControlFlow>
       </div>

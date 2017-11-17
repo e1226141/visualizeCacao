@@ -1,22 +1,23 @@
 import * as React from 'react';
-import {IPass}  from '../data';
 
 export interface IPassListEntryProps {
-  pass: IPass;
-  handleClick: (pass: IPass) => void;
+  passName: string;
+  index: number;
+  disabled: boolean;
+  className: string;
+  onClick: (index: number) => void;
 }
 
 export class PassListEntry extends React.Component<IPassListEntryProps, {}> {
 
-  constructor(props: IPassListEntryProps) {
-    super(props);
-    // this.props.handleClick = this.props.handleClick.bind(this);
+  handleClick(event: any): void {
+    this.props.onClick(event.target.value);
   }
 
   render() {
     return (
-      <button onClick={() => this.props.handleClick(this.props.pass)}>
-        {this.props.pass.name}
+      <button disabled={this.props.disabled} className={this.props.className} value={this.props.index} onClick={this.handleClick.bind(this)}>
+        {this.props.passName}
       </button>
     );
   }

@@ -75,7 +75,7 @@ export class Pass implements Serializable<IPass>, IPass {
     fromJson(input: any) {
       this.name = input.name;
       this.nodes = input.nodes.map((node: any) => new Node().fromJson(node));
-      this.edges = input.edges.map((edge: any) => new Node().fromJson(edge));
+      this.edges = input.edges.map((edge: any) => new Edge().fromJson(edge));
       return this;
     }
 }

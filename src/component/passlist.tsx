@@ -1,21 +1,46 @@
 import * as React from 'react';
 import {IPass}  from '../data';
 import {PassListEntry}  from './passlist_entry';
+import { v4 as uuid } from 'uuid';
 
 export interface IPassListProps {
   passes: IPass[];
   handleClick: (pass: IPass) => void;
 }
 
-export class PassList extends React.Component<IPassListProps, {}> {
+export interface IPassListState {
+  activeIndex: number;
+}
+
+export class PassList extends React.Component<IPassListProps, IPassListState> {
+
+  constructor(props: IPassListProps) {
+    super(props);
+    this.state = {activeIndex: -1};
+  }
+
+  handleClick(index: number): void {
+    console.log('active_index: ' + index);
+    this.setState(() => ({ activeIndex: index }));
+    this.props.handleClick(this.props.passes[index]);
+  }
+
   render() {
-    let clickHandler: (pass: IPass) => void = this.props.handleClick;
+    let onClick = this.handleClick.bind(this);
+    let state: IPassListState = this.state;
     return (
-        <ul>
-          {this.props.passes.map(function(pass) {
-            return <div><PassListEntry pass={pass} handleClick={clickHandler}/></div>;
-          })}
-        </ul>
+        <div>
+          {this.props.passes.map(function(pass, index) {
+            const disabled = !pass.nodes || pass.nodes.length == 0;
+            const className = (state.activeIndex == index) ? 'pass_button pass_button_active' : 'pass_button';
+
+            return (
+              <div key={uuid()}>
+                <PassListEntry passName={pass.name} disabled={disabled} onClick={onClick} className={className} index={index} />
+              </div>
+            );
+           })}
+        </div>
     );
   }
 }

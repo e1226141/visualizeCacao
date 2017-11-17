@@ -7,14 +7,12 @@ npm i -D vis --save--exact
 npm install -g typescript
 npm install -g tslint
 
-
-
 Links:
 https://electron.atom.io/docs/tutorial/quick-start/
 https://www.sitepoint.com/beginners-guide-node-package-manager/
 https://narayanatechnicalworld.blogspot.co.at/2016/05/what-is-tslint.html
 
-troubles typescript & electtron:
+troubles typescript & electron:
 https://github.com/electron/electron/issues/10151
 
 
@@ -22,3 +20,17 @@ https://github.com/electron/electron/issues/10151
 
 JSON to TS: 
 http://json2ts.com/
+
+
+electron forge
+npm i -D vis --save--exact
+npm install @types/vis
+
+npm i -D react-graph-vis --save--exact
+# npm install --save react-bootstrap          // changes appearance of vis.js (?)
+np# m install --save react-semantic-ui        // changes appearance of vis.js (?)
+
+npm install --save antd
+# DON'T NECESSARY:   npm install --save @types/antd
+
+npm install --save @types/uuid
