@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Pass, Node, Edge } from '../data';
-import { Title } from './Title';
 import Graph from 'react-graph-vis';
 
 export interface IControlFlowProps {
@@ -23,7 +22,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
         'smooth': {
           'enabled': true,
           'type': 'discrete'
-        }
+        },
+        'color': '#FF0000'
       },
       'layout': {
         'randomSeed': 5,
@@ -46,59 +46,6 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
     return options as JSON;
   }
 
-  /*setHierarchy(nodeMap, edgeMap, node, level) {
-    if (node.level != null) {
-        return;
-    }
-    if (level > maxLevel) {
-        maxLevel = level;
-    }
-    //console.log("set node.level to " + level + " for id: " + node.id + " and type " + node.name);
-    if (typeof node.level == 'undefined' || node.level > level) {
-        node.level = level;
-
-        // todo use map instead of edges.filter...
-        var edges = edgeMap[node.id];
-        if (edges) {
-            for (var i = 0; i < edges.length; i++) {
-                var childNode = nodeMap[edges[i].to];
-                setHierarchy(nodeMap, edgeMap, childNode, level + 1);
-            }
-        }
-    }
-  }
-   
-  function markBackedges(nodeMap, edgeMap, node, visitedNodes) {
-  var edges = edgeMap[node.id];
-  if (edges) {
-      visitedNodes[node.id] = true;
-      for (var i = 0; i < edges.length; i++) {
-          var edge = edges[i];
-          if (edge.type === "op") {
-              continue;
-          }
-          var childId = edge.to;
-          if (visitedNodes[childId]) {
-              edge.backedge = true;
-          } else {
-              var childNode = nodeMap[edge.to];
-              markBackedges(nodeMap, edgeMap, childNode, visitedNodes);
-          }
-          visitedNodes[node.id] = false;
-      }
-  }
-}
-
-    function isCfgNode(node) {
-        return $.inArray(node.name, ["BeginInst", "GOTOInst", "RETURNInst", "IFInst"]) != -1;
-    }
-
-    function isCfgEdge(edge) {
-        return $.inArray(edge.type, ["cfg", "bb"]) != -1;
-    }
-
-*/
-
   render() {
     const cfgBuilder = new CfgGraphBuilder(
       this.props.pass.nodes.filter(n => n.isCfgNode()),
@@ -118,11 +65,12 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
       }
     };
 
+    let style = {'height': '1024px', 'width': '640px'};
     return (
       <div>
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
-            <Graph graph={graph} options={options} events={events} style={{ height: '640px' }} />
+            <Graph graph={graph} options={options} events={events} style={style} />
           </div>
         </div>
       </div>
@@ -130,32 +78,79 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
   }
 }
 
+class CfgNode {
+  id: number;
+  name: string;
+  root: boolean;
+
+  private _node: Node;
+  getNode = (): Node => {
+    return this._node;
+  }
+
+  // display attributes
+  label: string;
+  color?: string;
+  endInstLink?: number;
+  level?: number;
+
+  constructor(pNode: Node, pLabel: string, pColor?: string) {
+    Object.assign(this, pNode); // copy all attributes with same name
+    this._node = pNode;
+    this.label = pLabel;
+    this.color = pColor;
+  }
+}
+
+class CfgEdge {
+  from: number;
+  to: number;
+  type: string;
+  trueBranch: boolean;
+
+  // display attributes
+  label: string;
+  color: string;
+  width?: number;
+  backedge?: boolean;
+  dashes?: boolean;
+
+  constructor(pEdge: Edge, pLabel: string, pColor?: string, pWidth?: number, pDashes?: boolean) {
+    Object.assign(this, pEdge); // copy all attributes with same name
+    this.label = pLabel;
+    this.color = pColor;
+    this.width = pWidth;
+    this.dashes = pDashes;
+  }
+}
+
 class CfgGraphBuilder {
-  nodes: Node[];
-  edges: Edge[];
-  showBB: boolean;
-  private _cfgNodeMap: Map<number, Node> = new Map();
-  private _cfgEdgeMap: Map<number, Array<Edge>> = new Map();
+  private _nodes: CfgNode[];
+  private _edges: CfgEdge[];
+  private _showBB: boolean;
+  private _cfgNodeMap: Map<number, CfgNode> = new Map();
+  private _cfgEdgeMap: Map<number, Array<CfgEdge>> = new Map();
+  private _maxLevel: number = 0;
 
   constructor(n: Node[], e: Edge[], bb: boolean) {
-    this.nodes = n;
-    this.edges = e;
-    this.showBB = bb;
+    this._nodes = n.map(this._toCfgNode);
+    this._edges = e.map(this._toCfgEdge);
+    this._showBB = bb;
 
-    if (this.showBB) {
-      this.nodes = this.nodes.slice();
-      this.edges = this.edges.slice();
-      this.createLookupMaps();
-      this.collapseToBB();
-    } else {
-      this.createLookupMaps();
+    this.createLookupMaps();
+    if (this._showBB) {
+      this._collapseToBB();
     }
+    const root = this._findRoot();
+    this._markBackedges(root, new Set<number>());
+    this._edges.filter(e => e.backedge).forEach(e => e.color = '#EE0000');
+    this._setHierarchy(root, 0);
   }
 
   // create node and edge lookups
   private createLookupMaps(): void {
-    this.nodes.forEach((n) => { this._cfgNodeMap.set(n.id, n); });
-    this.edges.forEach((e) => {
+    this._nodes.forEach((n) => { this._cfgNodeMap.set(n.id, n); });
+    this._edges.forEach((e) => {
       let edgeList = this._cfgEdgeMap.get(e.from);
       if (edgeList == null) {
         edgeList = [];
@@ -166,80 +161,119 @@ class CfgGraphBuilder {
   }
 
   toJSONGraph = (): JSON => {
+    console.log(this._edges.filter(e => e.backedge));
     let graph: any = {
-      'nodes': this.nodes.map(this.convertNode),
-      'edges': this.edges.map(this.convertEdge)
+      'nodes': JSON.parse(JSON.stringify(this._nodes)),
+      'edges': JSON.parse(JSON.stringify(this._edges))
     };
     return graph as JSON;
   }
 
-  private convertNode = (node: Node): any => {
-    return {
-      'id': node.id,
-      'label': this.getNodeDisplayString(node, true),
-      'color': this.getNodeBackgroundColor(node.name),
-      // 'group': node.BB
-    };
+  private _toCfgNode = (node: Node): CfgNode => {
+    return new CfgNode(node,
+      this._getNodeDisplayString(node, true),
+      this._getNodeBackgroundColor(node.name)
+    );
   }
 
-  private convertEdge = (edge: Edge): any => {
-    return {
-      'from': edge.from,
-      'to': edge.to,
-      'label': edge.type,
-      'color': this.getEdgeColor(edge),
-      'width': 2
-    };
+  private _toCfgEdge = (edge: Edge): CfgEdge => {
+    let dashes = edge.type == 'bb' ? true : false;
+    return new CfgEdge(edge, edge.type, this._getEdgeColor(edge), 2, dashes);
   }
 
-  private collapseToBB(): void {
-    let cfgNodeData: Node[] = this.nodes.filter((node) => { return node.name === 'BeginInst'; });
-    cfgNodeData.forEach((beginInst) => {
+  private _findRoot = (): CfgNode | undefined => {
+    return this._nodes.find(node => node.root);
+  }
+
+  private _markBackedges(node: CfgNode | undefined, visitedNodes: Set<number> ) {
+    if (node == undefined) {
+      return;
+    }
+    const edges = this._cfgEdgeMap.get(node.id);
+    if (!edges || edges.length == 0) {
+      return;
+    }
+    visitedNodes.add(node.id);
+    edges
+      .filter(e => e.type !== 'op')
+      .forEach(edge => {
+        const childId = edge.to;
+        if (visitedNodes.has(childId)) {
+            edge.backedge = true;
+        } else {
+            const childNode = this._cfgNodeMap.get(edge.to);
+            this._markBackedges(childNode, visitedNodes);
+        }
+        visitedNodes.delete(node.id);
+    });
+  }
+
+  private _collapseToBB(): void {
+    this._nodes = this._nodes.filter((node) => { return node.name === 'BeginInst'; });
+    this._nodes.forEach((beginInst) => {
 
       // BeginInst and EndInst have a 1:1 relationship
-      let bbEdgeArray = this._cfgEdgeMap.get(beginInst.id);
+      const bbEdgeArray = this._cfgEdgeMap.get(beginInst.id);
       if (!bbEdgeArray) {
         return;
       }
-      let bbEdge = bbEdgeArray[0];
-      let endInst = this._cfgNodeMap.get(bbEdge.to);
+      const bbEdge = bbEdgeArray.filter((e) => { return e.type == 'bb'; })[0];
+      const endInst = this._cfgNodeMap.get(bbEdge.to);
       if (!endInst) {
         return;
       }
 
       // adjust the label
-      /* TODO
       beginInst.label = 'BB #' + beginInst.id + ' => #' + endInst.id;
       if (endInst.name !== 'GOTOInst') {
-        beginInst.label += '\n' + this.getNodeDisplayString(endInst, true);
-      }*/
-
-      // adjust outgoing edges to the combined begin block
-      let edgeList = this._cfgEdgeMap.get(endInst.id);
-      if (edgeList) {
-        edgeList.forEach( e => e.from = beginInst.id );
+        beginInst.label += this._getNodeDisplayString(endInst.getNode(), true);
       }
 
-      // color is based on the endInst
-      /*
-      TODO
-      beginInst.color = this.getNodeBackgroundColor(endInst);
+      // adjust outgoing edges to the combined begin block
+      const edgeList = this._cfgEdgeMap.get(endInst.id);
+      if (edgeList) {
+        edgeList.forEach( e => { e.from = beginInst.id; });
+      }
+
+      // color is based on the endInsts
+      beginInst.color = this._getNodeBackgroundColor(endInst.name);
       beginInst.endInstLink = endInst.id;
-      */
     });
 
     // remove all 'bb' edges
-    this.edges = this.edges.filter((e) => { return e.type !== 'bb'; });
+    this._edges = this._edges.filter((e) => { return e.type !== 'bb'; });
   }
 
-  private getNodeBackgroundColor = (nodeName: string): string => {
+ private _setHierarchy = (node: CfgNode | undefined, level: number): void => {
+    if (node == undefined || !node.level) {
+        return;
+    }
+    if (level > this._maxLevel) {
+        this._maxLevel = level;
+    }
+    //console.log("set node.level to " + level + " for id: " + node.id + " and type " + node.name);
+    if (node.level == undefined || node.level > level) {
+        node.level = level;
+
+        // todo use map instead of edges.filter...
+        const edges = this._cfgEdgeMap.get(node.id);
+        if (edges) {
+          edges.forEach(e => {
+            const childNode = this._cfgNodeMap.get(e.to);
+            this._setHierarchy(childNode, level + 1);
+          });
+        }
+    }
+  }
+
+  private _getNodeBackgroundColor = (nodeName: string): string => {
     switch (nodeName) {
       case 'IFInst':
         return '#A1EC76';
       case 'RETURNInst':
         return '#FFA807';
       case 'GOTOInst':
-        if (!this.showBB) {
+        if (!this._showBB) {
           return '#C7E2FC';
         }
         return '#97C2FC';
@@ -250,12 +284,9 @@ class CfgGraphBuilder {
     }
   }
 
-  private getEdgeColor(edge: Edge): string {
+  private _getEdgeColor(edge: Edge): string {
     switch (edge.type) {
       case 'cfg':
-        if (edge.backedge) {
-          return '#EE0000';
-        }
         if (edge.trueBranch) {
           // the branches of an 'if' statement get different colors
           if (edge.trueBranch) {
@@ -275,9 +306,9 @@ class CfgGraphBuilder {
     }
   }
 
-  private getNodeDisplayString(node: Node, simpleDisplay: boolean): string {
+  private _getNodeDisplayString(node: Node, simpleDisplay: boolean): string {
     if (simpleDisplay) {
-      return this.getSimpleNodeDisplayString(node);
+      return this._getSimpleNodeDisplayString(node);
     }
     let outputValue = '[" + node.id + "]: ' + node.name;
     if (node.name === 'CONSTInst') {
@@ -286,7 +317,7 @@ class CfgGraphBuilder {
     if (node.operands) {
       outputValue += '[';
       if (node.name === 'IFInst') {
-        outputValue += '#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1];
+        outputValue += '#' + node.operands[0] + ' ' + this._displayIFCondition(node.condition) + ' #' + node.operands[1];
       } else {
         outputValue += node.operands.map((id) => { return '#' + id; }).toString();
       }
@@ -295,30 +326,21 @@ class CfgGraphBuilder {
     return outputValue;
   }
 
-  private getSimpleNodeDisplayString(node: Node): string {
+  private _getSimpleNodeDisplayString(node: Node): string {
     if (node.name === 'CONSTInst') {
       return 'Const: ' + node.value;
     }
     if (node.name === 'RETURNInst') {
-      let outputValue = '\nRETURN';
-      // can be void!
-      if (node.operands) {
-        outputValue += ' #' + node.operands[0];
-      }
-      return outputValue;
+      return 'RETURN' + (node.operands ? ' #' + node.operands[0] : '');
     }
     if (node.name === 'IFInst') {
-      return '\nIF [#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
+      return 'IF [#' + node.operands[0] + ' ' + this._displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
     }
 
-    let outputValue = node.name;
-    if (node.operands) {
-      outputValue += node.operands.map((id) => { return '#' + id; }).toString();
-    }
-    return outputValue;
+    return node.name + (node.operands ? node.operands.map((id) => { return '#' + id; }).toString() : '') ;
   }
 
-  private displayIFCondition(cond: string): string {
+  private _displayIFCondition(cond: string): string {
     switch (cond) {
       case 'GE':
         return '>=';
