@@ -20,7 +20,6 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
   }
 
   handleClick(index: number): void {
-    console.log('active_index: ' + index);
     this.setState(() => ({ activeIndex: index }));
     this.props.handleClick(this.props.passes[index]);
   }

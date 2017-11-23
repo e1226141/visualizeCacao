@@ -18,7 +18,9 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   }
 
   setSelectedPass(newSelectedPass: Pass): void {
-    this.setState({selectedPass: newSelectedPass});
+    if (this.state.selectedPass != newSelectedPass) {
+      this.setState({selectedPass: newSelectedPass});
+    }
   }
 
   render() {

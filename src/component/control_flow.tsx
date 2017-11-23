@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Pass, Node, Edge } from '../data';
-import Graph from 'react-graph-vis';
+// import Graph from 'react-graph-vis';
+import { NetworkGraph } from './network_graph';
 
 export interface IControlFlowProps {
   pass: Pass;
@@ -10,6 +11,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
 
   getDefaultOptions(): JSON {
     let options: any = {
+      'height': '100%',
+      'width': '100%',
       'nodes': {
         'shape': 'box',
       },
@@ -22,8 +25,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
         'smooth': {
           'enabled': true,
           'type': 'discrete'
-        },
-        'color': '#FF0000'
+        }
       },
       'layout': {
         'randomSeed': 5,
@@ -65,12 +67,14 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
       }
     };
 
+    // <Graph graph={graph} options={options} events={events} style={style} />
     let style = {'height': '1024px', 'width': '640px'};
+    console.log('control_flow: ' + graph.nodes.length);
     return (
       <div>
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
-            <Graph graph={graph} options={options} events={events} style={style} />
+            <NetworkGraph graph={graph} options={options} events={events} style={style} />
           </div>
         </div>
       </div>
@@ -110,7 +114,7 @@ class CfgEdge {
 
   // display attributes
   label: string;
-  color: string;
+  color?: string;
   width?: number;
   backedge?: boolean;
   dashes?: boolean;
@@ -161,7 +165,6 @@ class CfgGraphBuilder {
   }
 
   toJSONGraph = (): JSON => {
-    console.log(this._edges.filter(e => e.backedge));
     let graph: any = {
       'nodes': JSON.parse(JSON.stringify(this._nodes)),
       'edges': JSON.parse(JSON.stringify(this._edges))
@@ -285,6 +288,9 @@ class CfgGraphBuilder {
   }
 
   private _getEdgeColor(edge: Edge): string {
+    if (1 == 1) {
+      return "red";
+    }
     switch (edge.type) {
       case 'cfg':
         if (edge.trueBranch) {
