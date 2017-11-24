@@ -5,6 +5,7 @@ import { NetworkGraph } from './network_graph';
 
 export interface IControlFlowProps {
   pass: Pass;
+  showBB: boolean;
 }
 
 export class ControlFlow extends React.Component<IControlFlowProps, {}> {
@@ -52,7 +53,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
     const cfgBuilder = new CfgGraphBuilder(
       this.props.pass.nodes.filter(n => n.isCfgNode()),
       this.props.pass.edges.filter(e => e.isCfgEdge()),
-      true /* showBB */
+      this.props.showBB
     );
     const graph: JSON = cfgBuilder.toJSONGraph();
     const options: JSON = this.getDefaultOptions();
