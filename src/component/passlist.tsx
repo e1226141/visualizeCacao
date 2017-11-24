@@ -25,21 +25,19 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
   }
 
   render() {
-    let onClick = this.handleClick.bind(this);
-    let state: IPassListState = this.state;
-    return (
-        <div>
-          {this.props.passes.map(function(pass, index) {
-            const disabled = !pass.nodes || pass.nodes.length == 0;
-            const className = (state.activeIndex == index) ? 'pass_button pass_button_active' : 'pass_button';
+    const onClick = this.handleClick.bind(this);
+    const state = this.state;
+    const listItems = this.props.passes.map(function(pass, index) {
+      const selected = state.activeIndex == index;
+      const disabled = !pass.nodes || pass.nodes.length == 0;
+      return (
+        <div key={ pass.name + index}>
+          <PassListEntry passName={pass.name} disabled={disabled} onClick={onClick} selected={selected} index={index} />
+        </div>);
+    });
 
-            return (
-              <div key={uuid()}>
-                <PassListEntry passName={pass.name} disabled={disabled} onClick={onClick} className={className} index={index} />
-              </div>
-            );
-           })}
-        </div>
+    return (
+        <div>{listItems}</div>
     );
   }
 }

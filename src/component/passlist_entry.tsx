@@ -1,25 +1,32 @@
 import * as React from 'react';
+import { FlatButton }  from 'material-ui';
 
 export interface IPassListEntryProps {
   passName: string;
   index: number;
   disabled: boolean;
-  className: string;
+  selected: boolean;
   onClick: (index: number) => void;
 }
 
 export class PassListEntry extends React.Component<IPassListEntryProps, {}> {
 
-  handleClick(event: any): void {
-    this.props.onClick(event.target.value);
+  handleClick(index: number): void {
+    this.props.onClick(index);
+  }
+
+  shouldComponentUpdate(nextProps: IPassListEntryProps) {
+    return nextProps.selected != this.props.selected || nextProps.index != this.props.index
+    || nextProps.disabled != this.props.disabled || nextProps.passName != this.props.passName;
   }
 
   render() {
     const name = this.props.passName.slice(0, this.props.passName.lastIndexOf('Pass'));
+    const backgroundColor = this.props.selected ? '#A6A6A6' : '';
     return (
-      <button disabled={this.props.disabled} className={this.props.className} value={this.props.index} onClick={this.handleClick.bind(this)}>
-        {name}
-      </button>
+      <FlatButton  labelStyle={{ 'fontSize': 14,  'padding': '0px', 'margin': '0px' }} backgroundColor={backgroundColor}
+        style = {{ 'height': '28px'}} label={name} disabled={this.props.disabled}
+        value={this.props.index} onClick={() => this.handleClick(this.props.index)}/>
     );
   }
 }

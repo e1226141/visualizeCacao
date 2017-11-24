@@ -26,8 +26,14 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   render() {
     return (
        <div className='grid'>
-         <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this.setSelectedPass(pass) } />
-         <ControlFlow pass={this.state.selectedPass}></ControlFlow>
+         <div>
+          <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this.setSelectedPass(pass) } />
+         </div>
+         <div>
+          <ControlFlow pass={this.state.selectedPass}></ControlFlow>
+         </div>
+         <div>
+         </div>
        </div>
     );
   }

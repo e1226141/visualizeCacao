@@ -25,12 +25,10 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   }
 
   componentDidMount() {
-    console.log('componentDidMount');
     this.createGraph();
   }
 
   createGraph() {
-    console.log('updateGraph');
     let identifier = this.state.identifier || '';
     let container = document.getElementById(identifier);
     if (!container) {
@@ -53,7 +51,6 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {
-    console.log('shouldComponentUpdate');
     // compare counts
     let changedEdges: boolean = this.props.graph.edges.length != nextProps.graph.edges.length
                                || JSON.stringify(this.props.graph.edges) !== JSON.stringify(nextProps.graph. edges);
@@ -77,7 +74,6 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   }
 
   render() {
-    console.log('render');
     return (
       <div id={this.state.identifier} style={this.props.style} />
     );

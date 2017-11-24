@@ -229,7 +229,7 @@ class CfgGraphBuilder {
       // adjust the label
       beginInst.label = 'BB #' + beginInst.id + ' => #' + endInst.id;
       if (endInst.name !== 'GOTOInst') {
-        beginInst.label += this._getNodeDisplayString(endInst.getNode(), true);
+        beginInst.label += '\n' + this._getNodeDisplayString(endInst.getNode(), true);
       }
 
       // adjust outgoing edges to the combined begin block

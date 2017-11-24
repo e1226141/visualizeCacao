@@ -34,3 +34,8 @@ npm install --save antd
 # DON'T NECESSARY:   npm install --save @types/antd
 
 npm install --save @types/uuid
+
+
+npm install material-ui
+npm install @types/material-ui --save-dev
+npm install @types/react-tap-event-plugin --save-dev
