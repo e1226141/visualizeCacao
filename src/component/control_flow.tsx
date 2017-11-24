@@ -2,10 +2,13 @@ import * as React from 'react';
 import { Pass, Node, Edge } from '../data';
 // import Graph from 'react-graph-vis';
 import { NetworkGraph } from './network_graph';
+import { Title } from './title';
+import { Checkbox, AutoComplete, Divider} from 'material-ui';
 
 export interface IControlFlowProps {
   pass: Pass;
   showBB: boolean;
+  onClickShowBB: () => void;
 }
 
 export class ControlFlow extends React.Component<IControlFlowProps, {}> {
@@ -70,10 +73,34 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
 
     // <Graph graph={graph} options={options} events={events} style={style} />
     let style = {'height': '1024px', 'width': '640px'};
-    console.log('control_flow: ' + graph.nodes.length);
+    const dataSourceConfig = {
+      text: 'label',
+      value: 'id',
+    };
     return (
       <div>
+         <div>
+           <Title value={this.props.pass.name} />
+         </div>
+         <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }} >
+            <AutoComplete
+                floatingLabelText="search CFG"
+                filter={AutoComplete.caseInsensitiveFilter}
+                openOnFocus={true}
+                dataSource={graph.nodes}
+                dataSourceConfig={dataSourceConfig}
+                maxSearchResults={7}
+              />
+            <Checkbox label='BB' checked={this.props.showBB} 
+              onClick={() => this.props.onClickShowBB()} />
+        </div>
         <div id='cfgNetwork'>
+          <Divider />
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={style} />
           </div>

@@ -2,7 +2,6 @@ import * as React from 'react';
 import { OptimizedMethod, Pass}  from '../data';
 import { ControlFlow } from './control_flow';
 import { PassList } from './passlist';
-import { Checkbox } from 'material-ui';
 
 export interface IHIRProps {
     optimizedMethod: OptimizedMethod;
@@ -28,7 +27,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
     }
   }
 
-  updateShowBB() {
+  toggleShowBB(): void {
     this.setState((prevState) => ({ ...prevState, showBB: !prevState.showBB }));
   }
 
@@ -39,8 +38,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
           <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this.setSelectedPass(pass) } />
          </div>
          <div>
-          <Checkbox label='BB' checked={this.state.showBB} onCheck={this.updateShowBB.bind(this)} />
-          <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB}></ControlFlow>
+          <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} onClickShowBB={this.toggleShowBB.bind(this)}></ControlFlow>
          </div>
          <div>
          </div>
