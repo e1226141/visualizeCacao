@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { Pass, Node, Edge } from '../data';
-// import Graph from 'react-graph-vis';
 import { NetworkGraph } from './network_graph';
 import { Title } from './title';
-import { Checkbox, AutoComplete, Divider} from 'material-ui';
+import { Checkbox, AutoComplete, Paper } from 'material-ui';
 
 export interface IControlFlowProps {
   pass: Pass;
@@ -79,9 +78,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
     };
     return (
       <div>
-         <div>
-           <Title value={this.props.pass.name} />
-         </div>
+        <Paper zDepth={1} >
          <div style={{
               display: 'flex',
               flexDirection: 'row',
@@ -96,11 +93,11 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
                 dataSourceConfig={dataSourceConfig}
                 maxSearchResults={7}
               />
-            <Checkbox label='BB' checked={this.props.showBB} 
+            <Checkbox label='show BB' checked={this.props.showBB}
               onClick={() => this.props.onClickShowBB()} />
-        </div>
+          </div>
+        </Paper>
         <div id='cfgNetwork'>
-          <Divider />
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={style} />
           </div>
