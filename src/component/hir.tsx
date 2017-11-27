@@ -2,7 +2,7 @@ import * as React from 'react';
 import { OptimizedMethod, Pass}  from '../data';
 import { ControlFlow } from './control_flow';
 import { PassList } from './passlist';
-import { Paper, IconButton}  from 'material-ui';
+import { IconButton}  from 'material-ui';
 import SubjectIcon from 'material-ui/svg-icons/action/subject';
 
 export interface IHIRProps {
@@ -43,23 +43,21 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
         display: 'grid',
         height: '100%',
         gridTemplateColumns: gridTEmplateColumns,
-        marginLeft: '20px'
     };
     let passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this.setSelectedPass(pass) } />
       : <div></div>;
     return (
         <div>
-            <div style={style}>
-              <div>
-               <IconButton tooltip='show/hide Pass-List' onClick={this.toggleShowPasses} > <SubjectIcon /> </IconButton>
-              </div>
-              {passList}
-              <Paper zDepth={1} >
-                <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} onClickShowBB={this.toggleShowBB.bind(this)}></ControlFlow>
-              </Paper>
-              <Paper zDepth={1} >
-              </Paper>
+          <div style={style}>
+            <div>
+              <IconButton tooltip='show/hide Pass-List' onClick={this.toggleShowPasses}>
+                <SubjectIcon/>
+              </IconButton>
+            </div>
+            {passList}
+            <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} onClickShowBB={this.toggleShowBB.bind(this)} />
+            <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} onClickShowBB={this.toggleShowBB.bind(this)} />
           </div>
         </div>
     );

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Pass, Node, Edge } from '../data';
 import { NetworkGraph } from './network_graph';
-import { Title } from './title';
 import { Checkbox, AutoComplete, Paper } from 'material-ui';
+import { TextCount } from './text_count';
 
 export interface IControlFlowProps {
   pass: Pass;
@@ -70,15 +70,12 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
       }
     };
 
-    // <Graph graph={graph} options={options} events={events} style={style} />
-    let style = {'height': '1024px', 'width': '640px'};
     const dataSourceConfig = {
       text: 'label',
       value: 'id',
     };
     return (
       <div>
-        <Paper zDepth={1} >
          <div style={{
               display: 'flex',
               flexDirection: 'row',
@@ -93,13 +90,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
                 dataSourceConfig={dataSourceConfig}
                 maxSearchResults={7}
               />
-            <Checkbox label='show BB' checked={this.props.showBB}
+            <Checkbox label='BB' checked={this.props.showBB} title='show basic blocks'
               onClick={() => this.props.onClickShowBB()} />
+            <TextCount value={graph.nodes.length} type='xBB' title='number of BB'/>
           </div>
-        </Paper>
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
-            <NetworkGraph graph={graph} options={options} events={events} style={style} />
+            <NetworkGraph graph={graph} options={options} events={events} style= {{height: '1024px', width: '640px'}} />
           </div>
         </div>
       </div>
