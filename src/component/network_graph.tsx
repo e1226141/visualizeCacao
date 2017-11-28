@@ -7,6 +7,7 @@ export interface INetworkGraphProps {
   options: any;
   events: any;
   style: any;
+  getVisNetwork?: (network: Network) => void;  // expose the vis.js network
 }
 
 export interface INetworkGraphState {
@@ -48,6 +49,10 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       }
     }
     this._network.fit();
+
+    if (this.props.getVisNetwork) {
+      this.props.getVisNetwork(this._network);
+    }
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {

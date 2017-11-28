@@ -1,11 +1,17 @@
 General:
 
-mkdir visualizeCacao
-npm init
-npm i -D electron --save--exact
+electron forge
+
 npm i -D vis --save--exact
-npm install -g typescript
-npm install -g tslint
+npm install @types/vis
+npm install --save @types/uuid
+
+npm install react-semantic-ui --save
+npm install semantic-ui-css --save
+npm install react-autosuggest --save
+npm install @types/react-autosuggest --save -d
+
+
 
 Links:
 https://electron.atom.io/docs/tutorial/quick-start/
@@ -16,29 +22,5 @@ troubles typescript & electron:
 https://github.com/electron/electron/issues/10151
 
 
-
-
 JSON to TS: 
 http://json2ts.com/
-
-
-electron forge
-npm i -D vis --save--exact
-npm install @types/vis
-
-npm i -D react-graph-vis --save--exact
-# npm install --save react-bootstrap          // changes appearance of vis.js (?)
-np# m install --save react-semantic-ui        // changes appearance of vis.js (?)
-
-npm install --save antd
-# DON'T NECESSARY:   npm install --save @types/antd
-
-npm install --save @types/uuid
-
-
-npm install material-ui
-npm install @types/material-ui --save-dev
-npm install @types/react-tap-event-plugin --save-dev
-
-
-Icons: https://material.io/icons/

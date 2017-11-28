@@ -3,7 +3,8 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	<link rel="stylesheet" href="css/styles.less"/>
+    <link rel="stylesheet" href="css/styles.less" />
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.12/semantic.min.css"></link>
 </head>
 
 <body style="overflow: hidden; background-color: rgba(0,0,0,0); margin: 0">
@@ -14,27 +15,18 @@
     window.exports = module.exports
 </script>
 <script type="text/tsx">
-    import * as React from 'react'; 
-    import * as ReactDOM from 'react-dom';
-    import {AppContainer} from 'react-hot-loader'; 
+    import * as React from 'react';
+	import * as ReactDOM from 'react-dom';
+	import {AppContainer} from 'react-hot-loader';
 	import {remote} from 'electron';
-	// import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-	import getMuiTheme from 'material-ui/styles/getMuiTheme';
-	import {MuiThemeProvider, lightBaseTheme} from "material-ui/styles";
-    
-	const lightMuiTheme = getMuiTheme(lightBaseTheme);
-	
-    let render = () => {
-        const { App } = require('./component/app');     
-        ReactDOM.render(
-			<AppContainer>
-				<MuiThemeProvider muiTheme={lightMuiTheme}>				
-					<App optimizedMethod={remote.getCurrentWindow().optimizedMethod}/>			
-				</MuiThemeProvider>
-			</AppContainer>, document.getElementById('App')); 
-        } 
-    render(); 
-    if (module.hot) { module.hot.accept(render); }
+
+	let render = () => { const { App } = require('./component/app');
+    ReactDOM.render(
+		<AppContainer>
+			<App optimizedMethod={remote.getCurrentWindow().optimizedMethod}/>
+		</AppContainer>, document.getElementById('App')); 
+	} 	
+	render(); if (module.hot) { module.hot.accept(render); }
 </script>
 
 </html>

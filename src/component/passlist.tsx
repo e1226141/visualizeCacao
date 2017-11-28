@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { Pass }  from '../data';
-import { PassListEntry }  from './passlist_entry';
-import { v4 as uuid } from 'uuid';
+import { Button } from 'semantic-ui-react';
 
 export interface IPassListProps {
   passes: Pass[];
-  handleClick: (pass: IPass) => void;
+  handleClick: (pass: Pass) => void;
 }
 
 export interface IPassListState {
@@ -17,6 +16,7 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
   constructor(props: IPassListProps) {
     super(props);
     this.state = {activeIndex: -1};
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handleClick(index: number): void {
@@ -25,19 +25,38 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
   }
 
   render() {
-    const onClick = this.handleClick.bind(this);
-    const state = this.state;
-    const listItems = this.props.passes.map(function(pass, index) {
-      const selected = state.activeIndex == index;
-      const disabled = !pass.nodes || pass.nodes.length == 0;
-      return (
-        <div key={ pass.name + index}>
-          <PassListEntry passName={pass.name} disabled={disabled} onClick={onClick} selected={selected} index={index} />
-        </div>);
-    });
-
     return (
-        <div>{listItems}</div>
+      <Button.Group vertical>
+        {this.props.passes.map( (pass, index) => this._createListEntry(this.state, pass, index))}
+      </Button.Group>
     );
   }
+
+  private _getPassDisplayName(passName: string): string {
+    let passIndex = passName.lastIndexOf('Pass');
+    if (passIndex == undefined) {
+      passIndex = passName.length - 1;
+    }
+    return passName.slice(0, passIndex);
+  }
+
+  private _createListEntry(state: IPassListState, pass: Pass, index: number): any  {
+    const name = this._getPassDisplayName(pass.name);
+    const active = state.activeIndex === index;
+    const disabled = !pass.nodes || pass.nodes.length == 0;
+    return (
+      <Button
+        key={ name + index}
+        active={active}
+        fluid={true}
+        disabled={disabled}
+        compact={true}
+        value={index}
+        size='tiny'
+        onClick={() => this.handleClick(index)}>
+      {name}
+      </Button>
+    );
+  }
+
 }

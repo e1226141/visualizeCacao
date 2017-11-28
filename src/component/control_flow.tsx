@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { Pass, Node, Edge } from '../data';
 import { NetworkGraph } from './network_graph';
-import { Checkbox, AutoComplete, Paper } from 'material-ui';
-import { TextCount } from './text_count';
+import { NodeSearch } from './node_search';
+import { Network } from 'vis';
+import { Segment, Checkbox, Statistic, Popup } from 'semantic-ui-react';
 
 export interface IControlFlowProps {
   pass: Pass;
@@ -11,6 +12,7 @@ export interface IControlFlowProps {
 }
 
 export class ControlFlow extends React.Component<IControlFlowProps, {}> {
+  private _cfgNetwork: Network;
 
   getDefaultOptions(): JSON {
     let options: any = {
@@ -50,7 +52,6 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
     };
     return options as JSON;
   }
-
   render() {
     const cfgBuilder = new CfgGraphBuilder(
       this.props.pass.nodes.filter(n => n.isCfgNode()),
@@ -69,34 +70,36 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
         console.log(edges);
       }
     };
-
-    const dataSourceConfig = {
-      text: 'label',
-      value: 'id',
+    const statisticsLabel = this.props.showBB ? 'BB' : 'cfg-inst';
+    const statisticsTooltip = this.props.showBB ? 'number of basic blocks' : 'number of control flow instructions';
+    let cfgSearchValueSelected = (selection: any) => {
+      console.log('selected: ' + selection.id);
+      const id = selection.id;
+      this._cfgNetwork.selectNodes( [id] );
+      this._cfgNetwork.focus(id, { scale: 1.2 });
     };
     return (
       <div>
-         <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }} >
-            <AutoComplete
-                floatingLabelText="search CFG"
-                filter={AutoComplete.caseInsensitiveFilter}
-                openOnFocus={true}
-                dataSource={graph.nodes}
-                dataSourceConfig={dataSourceConfig}
-                maxSearchResults={7}
+          <Segment.Group>
+          <Segment floated='left'>
+              <NodeSearch graph={graph} valueSelectedHandler={cfgSearchValueSelected}></NodeSearch>
+              <Popup trigger={<Checkbox label='BB' checked={this.props.showBB} onClick={() => this.props.onClickShowBB()} />}
+                content='combine HIR control flow to basic blocks'
               />
-            <Checkbox label='BB' checked={this.props.showBB} title='show basic blocks'
-              onClick={() => this.props.onClickShowBB()} />
-            <TextCount value={graph.nodes.length} type='xBB' title='number of BB'/>
-          </div>
+          </Segment>
+          <Segment floated='right'>
+            <Popup trigger={
+              <Statistic size='mini' floated='right'>
+                <Statistic.Value>{graph.nodes.length}</Statistic.Value>
+                <Statistic.Label>{statisticsLabel}</Statistic.Label>
+              </Statistic>
+              } content={statisticsTooltip} />
+          </Segment>
+          </Segment.Group>
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
-            <NetworkGraph graph={graph} options={options} events={events} style= {{height: '1024px', width: '640px'}} />
+            <NetworkGraph graph={graph} options={options} events={events} style= {{height: '1024px', width: '640px'}} 
+            getVisNetwork={ (network) => { this._cfgNetwork = network; } }/>
           </div>
         </div>
       </div>
