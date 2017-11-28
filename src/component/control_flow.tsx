@@ -43,9 +43,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
         improvedLayout: true,
         hierarchical: {
           enabled: true,
-          levelSeparation: 100,
+          levelSeparation: 80,
           nodeSpacing: 180,
-          //treeSpacing: 120,
           blockShifting: true,
           edgeMinimization: true,
           parentCentralization: true,
@@ -291,7 +290,7 @@ class CfgGraphBuilder {
   }
 
  private _setHierarchy = (node: CfgNode | undefined, level: number): void => {
-    if (node == undefined || !node.level) {
+    if (node == undefined || node.level != null) {
         return;
     }
     if (level > this._maxLevel) {
