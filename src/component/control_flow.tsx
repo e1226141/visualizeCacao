@@ -3,12 +3,15 @@ import { Pass, Node, Edge } from '../data';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
-import { Segment, Checkbox, Statistic, Popup } from 'semantic-ui-react';
+import { Segment, Checkbox, Statistic, Popup, Container } from 'semantic-ui-react';
 
 export interface IControlFlowProps {
   pass: Pass;
   showBB: boolean;
+  showEdgeLabels: boolean;
   onClickShowBB: () => void;
+  onClickShowEdgeLabels: () => void;
+  networkGraphStyle: React.CSSProperties;
 }
 
 export class ControlFlow extends React.Component<IControlFlowProps, {}> {
@@ -16,38 +19,42 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
 
   getDefaultOptions(): JSON {
     let options: any = {
-      'height': '100%',
-      'width': '100%',
-      'nodes': {
-        'shape': 'box',
+      height: '100%',
+      width: '100%',
+      nodes: {
+        shape: 'box',
       },
-      'edges': {
-        'arrows': {
+      edges: {
+        arrows: {
           'to': {
             'enabled': true
           }
         },
-        'smooth': {
-          'enabled': true,
-          'type': 'discrete'
+        color: {
+          inherit: false
+        },
+        smooth: {
+          enabled: true,
+          type: 'discrete'
+        },
+        chosen: false
+      },
+      layout: {
+        improvedLayout: true,
+        hierarchical: {
+          enabled: true,
+          levelSeparation: 100,
+          nodeSpacing: 180,
+          //treeSpacing: 120,
+          blockShifting: true,
+          edgeMinimization: true,
+          parentCentralization: true,
+          direction: 'UD',
+          sortMethod: 'hubsize'
         }
       },
-      'layout': {
-        'randomSeed': 5,
-        'improvedLayout': true,
-        'hierarchical': {
-          'enabled': true,
-          'levelSeparation': 80,
-          'nodeSpacing': 180,
-          'blockShifting': true,
-          'edgeMinimization': true,
-          'parentCentralization': true,
-          'direction': 'UD', // UD, DU, LR, RL
-          'sortMethod': 'hubsize' // hubsize, directed
-        }
-      },
-      'physics': {
-        'enabled': false
+      physics: {
+        enabled: false
       }
     };
     return options as JSON;
@@ -56,7 +63,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
     const cfgBuilder = new CfgGraphBuilder(
       this.props.pass.nodes.filter(n => n.isCfgNode()),
       this.props.pass.edges.filter(e => e.isCfgEdge()),
-      this.props.showBB
+      this.props.showBB,
+      this.props.showEdgeLabels
     );
     const graph: JSON = cfgBuilder.toJSONGraph();
     const options: JSON = this.getDefaultOptions();
@@ -86,6 +94,9 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
               <Popup trigger={<Checkbox label='BB' checked={this.props.showBB} onClick={() => this.props.onClickShowBB()} />}
                 content='combine HIR control flow to basic blocks'
               />
+              <Popup trigger={<Checkbox label='T/F branches' checked={this.props.showEdgeLabels}
+                onClick={() => this.props.onClickShowEdgeLabels()} />} content='display true/false branches'
+              />
           </Segment>
           <Segment floated='right'>
             <Popup trigger={
@@ -98,7 +109,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
           </Segment.Group>
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
-            <NetworkGraph graph={graph} options={options} events={events} style= {{height: '1024px', width: '640px'}} 
+            <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
             getVisNetwork={ (network) => { this._cfgNetwork = network; } }/>
           </div>
         </div>
@@ -139,7 +150,7 @@ class CfgEdge {
 
   // display attributes
   label: string;
-  color?: string;
+  color?: {};
   width?: number;
   backedge?: boolean;
   dashes?: boolean;
@@ -147,7 +158,7 @@ class CfgEdge {
   constructor(pEdge: Edge, pLabel: string, pColor?: string, pWidth?: number, pDashes?: boolean) {
     Object.assign(this, pEdge); // copy all attributes with same name
     this.label = pLabel;
-    this.color = pColor;
+    this.color = {'color': pColor};
     this.width = pWidth;
     this.dashes = pDashes;
   }
@@ -157,14 +168,16 @@ class CfgGraphBuilder {
   private _nodes: CfgNode[];
   private _edges: CfgEdge[];
   private _showBB: boolean;
+  private _showEdgeLabels: boolean;
   private _cfgNodeMap: Map<number, CfgNode> = new Map();
   private _cfgEdgeMap: Map<number, Array<CfgEdge>> = new Map();
   private _maxLevel: number = 0;
 
-  constructor(n: Node[], e: Edge[], bb: boolean) {
-    this._nodes = n.map(this._toCfgNode);
-    this._edges = e.map(this._toCfgEdge);
-    this._showBB = bb;
+  constructor(nodes: Node[], edges: Edge[], showBB: boolean, showEdgeLabels: boolean) {
+    this._showBB = showBB;
+    this._showEdgeLabels = showEdgeLabels;
+    this._nodes = nodes.map(this._toCfgNode);
+    this._edges = edges.map(this._toCfgEdge);
 
     this.createLookupMaps();
     if (this._showBB) {
@@ -172,7 +185,8 @@ class CfgGraphBuilder {
     }
     const root = this._findRoot();
     this._markBackedges(root, new Set<number>());
-    this._edges.filter(e => e.backedge).forEach(e => e.color = '#EE0000');
+    this._edges.filter(e => e.backedge).forEach(e => { e.color = {color: '#EE0000'}; });
+    this._maxLevel = 0;
     this._setHierarchy(root, 0);
   }
 
@@ -205,8 +219,12 @@ class CfgGraphBuilder {
   }
 
   private _toCfgEdge = (edge: Edge): CfgEdge => {
-    let dashes = edge.type == 'bb' ? true : false;
-    return new CfgEdge(edge, edge.type, this._getEdgeColor(edge), 2, dashes);
+    const dashes = edge.type == 'bb' ? true : false;
+    let label = '';
+    if (this._showEdgeLabels && edge.trueBranch != undefined) {
+      label = edge.trueBranch ? 'T' : 'F';
+    }
+    return new CfgEdge(edge, label, this._getEdgeColor(edge), 2, dashes);
   }
 
   private _findRoot = (): CfgNode | undefined => {
@@ -313,9 +331,6 @@ class CfgGraphBuilder {
   }
 
   private _getEdgeColor(edge: Edge): string {
-    if (1 == 1) {
-      return "red";
-    }
     switch (edge.type) {
       case 'cfg':
         if (edge.trueBranch) {

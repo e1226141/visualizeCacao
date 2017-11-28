@@ -48,11 +48,11 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         this._network.on(eventName as NetworkEvents, events[eventName]);
       }
     }
-    this._network.fit();
-
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
+    this._network.stabilize();
+    this._network.fit();
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {
