@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 export interface INetworkGraphProps {
   graph: any;
   options: any;
-  events: any;
+  events?: any;
   style: any;
   getVisNetwork?: (network: Network) => void;  // expose the vis.js network
 }

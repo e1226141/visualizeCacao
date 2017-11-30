@@ -7,6 +7,7 @@ export interface ISearchProps {
     onRenderSuggestion: (data: any) => any;
     onRenderInputComponent: (inputProps: any) => any;    
     onValueSelected: (selection: any) => void;
+    style?: React.CSSProperties;
 }
 
 export interface ISearchState {
@@ -61,6 +62,7 @@ export class Search extends React.Component<ISearchProps, ISearchState> {
           inputProps={inputProps}
           renderInputComponent={this.props.onRenderInputComponent}
           onSuggestionSelected={this.onSuggestionSelected}
+          style={this.props.style}
         />
     );
   }

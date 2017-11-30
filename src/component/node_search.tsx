@@ -4,6 +4,7 @@ import { Search } from './search';
 export interface INodeSearchProps {
   graph: any;
   valueSelectedHandler: any;
+  style?: React.CSSProperties;
 }
 
 export class NodeSearch extends React.Component<INodeSearchProps, {}> {
@@ -43,7 +44,8 @@ export class NodeSearch extends React.Component<INodeSearchProps, {}> {
         getValues={this._getValues}
         onRenderSuggestion={this._renderSuggestion}
         onRenderInputComponent={this._renderInputComponent}
-        onValueSelected={this.props.valueSelectedHandler} />
+        onValueSelected={this.props.valueSelectedHandler}
+        style={this.props.style} />
     );
   }
 }

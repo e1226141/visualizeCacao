@@ -3,7 +3,7 @@ import { Pass, Node, Edge } from '../data';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
-import { Segment, Checkbox, Statistic, Popup, Container } from 'semantic-ui-react';
+import { Segment, Checkbox, Statistic, Popup, Portal, Header, Button, Icon } from 'semantic-ui-react';
 
 export interface IControlFlowProps {
   pass: Pass;
@@ -14,8 +14,21 @@ export interface IControlFlowProps {
   networkGraphStyle: React.CSSProperties;
 }
 
-export class ControlFlow extends React.Component<IControlFlowProps, {}> {
+export interface IControlFlowState {
+  showLegend: boolean;
+}
+
+export class ControlFlow extends React.Component<IControlFlowProps, IControlFlowState> {
   private _cfgNetwork: Network;
+
+  constructor(props: IControlFlowProps) {
+    super(props);
+    this.state = {
+      showLegend: false
+    };
+    this._onShowLegend = this._onShowLegend.bind(this);
+    this._onHideLegend = this._onShowLegend.bind(this);
+  }
 
   getDefaultOptions(): JSON {
     let options: any = {
@@ -58,6 +71,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
     };
     return options as JSON;
   }
+
+  private _onShowLegend = () => {
+    console.log('showLegend: ' + !this.state.showLegend);
+    this.setState({ showLegend: !this.state.showLegend });
+  }
+  private _onHideLegend = () => this.setState({ showLegend: false });
+
   render() {
     const cfgBuilder = new CfgGraphBuilder(
       this.props.pass.nodes.filter(n => n.isCfgNode()),
@@ -66,6 +86,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
       this.props.showEdgeLabels
     );
     const graph: JSON = cfgBuilder.toJSONGraph();
+    const legend: JSON = cfgBuilder.toJSONGraphLegend();
     const options: JSON = this.getDefaultOptions();
 
     const events = {
@@ -85,19 +106,24 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
       this._cfgNetwork.selectNodes( [id] );
       this._cfgNetwork.focus(id, { scale: 1.2 });
     };
+
     return (
       <div>
-          <Segment.Group>
+          <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
           <Segment floated='left'>
-              <NodeSearch graph={graph} valueSelectedHandler={cfgSearchValueSelected}></NodeSearch>
-              <Popup trigger={<Checkbox label='BB' checked={this.props.showBB} onClick={() => this.props.onClickShowBB()} />}
-                content='combine HIR control flow to basic blocks'
-              />
-              <Popup trigger={<Checkbox label='T/F branches' checked={this.props.showEdgeLabels}
-                onClick={() => this.props.onClickShowEdgeLabels()} />} content='display true/false branches'
-              />
+              <div>
+                <Popup trigger={<Checkbox label='BB' checked={this.props.showBB} onClick={() => this.props.onClickShowBB()}
+                  style={{paddingRight: '20px'}}/>} content='combine HIR control flow to basic blocks' style={{paddingRight: '20px'}}
+                />
+                <Popup trigger={<Checkbox label='T/F branches' checked={this.props.showEdgeLabels}
+                  onClick={() => this.props.onClickShowEdgeLabels()} style={{paddingRight: '20px'}} />}
+                  content='display true/false branches'/>
+                <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
+                  content='displays the legend of the cfg network graph'/>
+              </div>
+              <NodeSearch graph={graph} valueSelectedHandler={cfgSearchValueSelected} style={{paddingRight: '20px', width: '100%'}} />
           </Segment>
-          <Segment floated='right'>
+          <Segment floated='right' compact size='mini'>
             <Popup trigger={
               <Statistic size='mini' floated='right'>
                 <Statistic.Value>{graph.nodes.length}</Statistic.Value>
@@ -109,8 +135,17 @@ export class ControlFlow extends React.Component<IControlFlowProps, {}> {
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-            getVisNetwork={ (network) => { this._cfgNetwork = network; } }/>
+            getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
           </div>
+              <Portal onClose={this._onHideLegend} open={this.state.showLegend} closeOnDocumentClick={false}
+                 closeOnPortalMouseLeave={false}>
+                <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }}>
+                  <NetworkGraph graph={legend} options={options} style={{width: '256px', height: '128px'}} />
+                  <Header>This is a controlled portal<Icon name='window close outline' size='big' onClick={this._onHideLegend} /></Header>
+                  <p>Portals have tons of great callback functions to hook into.</p>
+                  <p>To close, simply click the close button or click away</p>
+                </Segment>
+              </Portal>
         </div>
       </div>
     );
@@ -203,6 +238,14 @@ class CfgGraphBuilder {
   }
 
   toJSONGraph = (): JSON => {
+    let graph: any = {
+      'nodes': JSON.parse(JSON.stringify(this._nodes)),
+      'edges': JSON.parse(JSON.stringify(this._edges))
+    };
+    return graph as JSON;
+  }
+
+  toJSONGraphLegend = (): JSON => {
     let graph: any = {
       'nodes': JSON.parse(JSON.stringify(this._nodes)),
       'edges': JSON.parse(JSON.stringify(this._edges))
