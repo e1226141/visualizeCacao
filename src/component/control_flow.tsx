@@ -30,7 +30,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     this._onHideLegend = this._onShowLegend.bind(this);
   }
 
-  getDefaultOptions(): JSON {
+  private _getDefaultOptions(): JSON {
     let options: any = {
       height: '100%',
       width: '100%',
@@ -72,6 +72,41 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     return options as JSON;
   }
 
+  private _getOptionsForLegend(): JSON {
+    let options: any = {
+      nodes: {
+        shape: 'box',
+      },
+      edges: {
+        arrows: {
+          'to': {
+            'enabled': true
+          }
+        },
+        color: {
+          inherit: false
+        },
+        smooth: {
+          enabled: true,
+          type: 'discrete'
+        },
+        chosen: false
+      },
+      layout: {
+        improvedLayout: true,
+        hierarchical: {
+          enabled: true,
+          direction: 'UD',
+          sortMethod: 'hubsize'
+        }
+      },
+      physics: {
+        enabled: false
+      }
+    };
+    return options as JSON;
+  }
+
   private _onShowLegend = () => {
     console.log('showLegend: ' + !this.state.showLegend);
     this.setState({ showLegend: !this.state.showLegend });
@@ -87,7 +122,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     );
     const graph: JSON = cfgBuilder.toJSONGraph();
     const legend: JSON = cfgBuilder.toJSONGraphLegend();
-    const options: JSON = this.getDefaultOptions();
+    const options: JSON = this._getDefaultOptions();
+    const legendOptions: JSON = this._getOptionsForLegend();
 
     const events = {
       select: function (event: any) {
@@ -140,10 +176,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
               <Portal onClose={this._onHideLegend} open={this.state.showLegend} closeOnDocumentClick={false}
                  closeOnPortalMouseLeave={false}>
                 <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }}>
-                  <NetworkGraph graph={legend} options={options} style={{width: '256px', height: '128px'}} />
-                  <Header>This is a controlled portal<Icon name='window close outline' size='big' onClick={this._onHideLegend} /></Header>
-                  <p>Portals have tons of great callback functions to hook into.</p>
-                  <p>To close, simply click the close button or click away</p>
+                  <Header>cfg legend by example<Icon name='window close outline' size='big' onClick={this._onHideLegend} /></Header>
+                  <NetworkGraph graph={legend} options={legendOptions} style={{width: '300px', height: '300px'}} />
                 </Segment>
               </Portal>
         </div>
@@ -246,9 +280,21 @@ class CfgGraphBuilder {
   }
 
   toJSONGraphLegend = (): JSON => {
+    const nodes = [
+      {id: 1, label: 'BB', level: 0, color: this._getNodeBackgroundColor('GOTOInst'), title: 'basic block with "GOTO" as EndInst'},
+      {id: 2, label: 'IF', level: 1, color: this._getNodeBackgroundColor('IFInst'), title: 'basic block with an "IF" as EndInst'},
+      {id: 3, label: 'BB', level: 2, color: this._getNodeBackgroundColor('GOTOInst'), title: 'basic block with an "GOTO" as EndInst'},
+      {id: 4, label: 'Return', level: 2, color: this._getNodeBackgroundColor('RETURNInst'), title: 'basic block with an "RETURN" as EndInst'}
+    ];
+    const edges = [
+      {from: 1, to: 2, color: {color: '#87B2EC'}},
+      {from: 2, to: 4, label: 'T', color: {color: '#5aa52b'}, title: 'true branch of an if statement'},
+      {from: 2, to: 3, label: 'F', color: {color: '#7C29F0'}, title: 'false branch of an if statement'},
+      {from: 3, to: 2, title: 'backedge', color: {color: '#EE0000'}}
+    ];
     let graph: any = {
-      'nodes': JSON.parse(JSON.stringify(this._nodes)),
-      'edges': JSON.parse(JSON.stringify(this._edges))
+      'nodes': JSON.parse(JSON.stringify(nodes)),
+      'edges': JSON.parse(JSON.stringify(edges))
     };
     return graph as JSON;
   }
