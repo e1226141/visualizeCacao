@@ -3,7 +3,7 @@ import { Pass, Node, Edge } from '../data';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
-import { Segment, Checkbox, Statistic, Popup, Portal, Header, Button, Icon } from 'semantic-ui-react';
+import { Segment, Checkbox, Statistic, Popup, Portal, Grid, Message, Icon } from 'semantic-ui-react';
 
 export interface IControlFlowProps {
   pass: Pass;
@@ -74,18 +74,10 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
 
   private _getOptionsForLegend(): JSON {
     let options: any = {
-      nodes: {
-        shape: 'box',
-      },
+      nodes: { shape: 'box' },
       edges: {
-        arrows: {
-          'to': {
-            'enabled': true
-          }
-        },
-        color: {
-          inherit: false
-        },
+        arrows: { 'to': { 'enabled': true } },
+        color: {inherit: false },
         smooth: {
           enabled: true,
           type: 'discrete'
@@ -100,17 +92,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           sortMethod: 'hubsize'
         }
       },
-      physics: {
-        enabled: false
-      }
+      interaction: { hover: true },
+      physics: { enabled: false }
     };
     return options as JSON;
   }
 
-  private _onShowLegend = () => {
-    console.log('showLegend: ' + !this.state.showLegend);
-    this.setState({ showLegend: !this.state.showLegend });
-  }
+  private _onShowLegend = () => this.setState({ showLegend: !this.state.showLegend });
   private _onHideLegend = () => this.setState({ showLegend: false });
 
   render() {
@@ -173,11 +161,27 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
             getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
           </div>
-              <Portal onClose={this._onHideLegend} open={this.state.showLegend} closeOnDocumentClick={false}
-                 closeOnPortalMouseLeave={false}>
-                <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }}>
-                  <Header>cfg legend by example<Icon name='window close outline' size='big' onClick={this._onHideLegend} /></Header>
-                  <NetworkGraph graph={legend} options={legendOptions} style={{width: '300px', height: '300px'}} />
+              <Portal onClose={this._onHideLegend} open={this.state.showLegend}
+                closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
+                <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }} >
+                    <Grid>
+                      <Grid.Row columns={2}>
+                        <Grid.Column>
+                          <Message>
+                            <Message.Header>cfg legend by example</Message.Header>
+                            <p>look at the tooltips on the nodes and edges for further details.</p>
+                          </Message>
+                        </Grid.Column>
+                        <Grid.Column>
+                          <Icon name='window close outline' size='big' onClick={this._onHideLegend} />
+                        </Grid.Column>
+                      </Grid.Row>
+                      <Grid.Row columns={1} stretched>
+                        <Grid.Column>
+                          <NetworkGraph graph={legend} options={legendOptions} style={{width: '400px', height: '300px'}} />
+                        </Grid.Column>
+                      </Grid.Row>
+                    </Grid>
                 </Segment>
               </Portal>
         </div>
