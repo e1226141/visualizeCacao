@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { OptimizedMethod, Pass}  from '../data';
 import { ControlFlow } from './control_flow';
+import { DetailGraph } from './detail_graph';
 import { PassList } from './passlist';
 import { Icon } from 'semantic-ui-react';
 
@@ -13,6 +14,7 @@ export interface IHIRState {
   showBB: boolean;
   showPasses: boolean;
   showEdgeLabels: boolean;
+  ShowAdjacentNodeDistance: number;
 }
 
 export class HIR extends React.Component<IHIRProps, IHIRState> {
@@ -22,7 +24,8 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
       selectedPass: props.optimizedMethod.passes[0],
       showBB: true,
       showPasses: true,
-      showEdgeLabels: true
+      showEdgeLabels: true,
+      ShowAdjacentNodeDistance: 2
     };
     this._setSelectedPass = this._setSelectedPass.bind(this);
     this._toggleShowBB = this._toggleShowBB.bind(this);
@@ -61,6 +64,8 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
             {passList}
             <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
               onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
+              networkGraphStyle={{height: '1024px'}}/>
+            <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.ShowAdjacentNodeDistance}
               networkGraphStyle={{height: '1024px'}}/>
           </div>
         </div>

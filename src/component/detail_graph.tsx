@@ -5,29 +5,26 @@ import { NodeSearch } from './node_search';
 import { Network } from 'vis';
 import { Segment, Checkbox, Statistic, Popup, Portal, Grid, Message, Icon } from 'semantic-ui-react';
 
-export interface IControlFlowProps {
+export interface IDetailGraphProps {
   pass: Pass;
-  showBB: boolean;
-  showEdgeLabels: boolean;
-  onClickShowBB: () => void;
-  onClickShowEdgeLabels: () => void;
+  showAdjacentNodeDistance: number;
   networkGraphStyle: React.CSSProperties;
 }
 
-export interface IControlFlowState {
+export interface IDetailGraphState {
   showLegend: boolean;
+  selectedNode: number;
 }
 
-export class ControlFlow extends React.Component<IControlFlowProps, IControlFlowState> {
-  private _cfgNetwork: Network;
+export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraphState> {
+  private _detailNetwork: Network;
 
-  constructor(props: IControlFlowProps) {
+  constructor(props: IDetailGraphProps) {
     super(props);
     this.state = {
-      showLegend: false
+      showLegend: false,
+      selectedNode: -1
     };
-    this._onShowLegend = this._onShowLegend.bind(this);
-    this._onHideLegend = this._onShowLegend.bind(this);
   }
 
   private _getDefaultOptions(): JSON {
@@ -98,18 +95,18 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     return options as JSON;
   }
 
-  private _onShowLegend = () => this.setState({ showLegend: !this.state.showLegend });
-  private _onHideLegend = () => this.setState({ showLegend: false });
+  private _onShowLegend = () => this.setState( (prevState) => ({...prevState, showLegend: !this.state.showLegend }));
+  private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
 
   render() {
-    const cfgBuilder = new CfgGraphBuilder(
-      this.props.pass.nodes.filter(n => n.isCfgNode()),
-      this.props.pass.edges.filter(e => e.isCfgEdge()),
-      this.props.showBB,
-      this.props.showEdgeLabels
+    const graphBuilder = new DetailGraphBuilder(
+      this.props.pass.nodes,
+      this.props.pass.edges,
+      this.state.selectedNode,
+      this.props.showAdjacentNodeDistance
     );
-    const graph: JSON = cfgBuilder.toJSONGraph();
-    const legend: JSON = cfgBuilder.toJSONGraphLegend();
+    const graph: JSON = graphBuilder.toJSONGraph();
+    const legend: JSON = graphBuilder.toJSONGraphLegend();
     const options: JSON = this._getDefaultOptions();
     const legendOptions: JSON = this._getOptionsForLegend();
 
@@ -122,13 +119,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
         console.log(edges);
       }
     };
-    const statisticsLabel = this.props.showBB ? 'BB' : 'cfg-inst';
-    const statisticsTooltip = this.props.showBB ? 'number of basic blocks' : 'number of control flow instructions';
-    let cfgSearchValueSelected = (selection: any) => {
+    const statisticsLabel = 'instructions';
+    const statisticsTooltip = 'number of instructions';
+    let searchValueSelected = (selection: any) => {
       console.log('selected: ' + selection.id);
       const id = selection.id;
-      this._cfgNetwork.selectNodes( [id] );
-      this._cfgNetwork.focus(id, { scale: 1.0 });
+      this._detailNetwork.selectNodes( [id] );
+      this._detailNetwork.focus(id, { scale: 1.1 });
     };
 
     return (
@@ -136,16 +133,10 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
           <Segment floated='left'>
               <div>
-                <Popup trigger={<Checkbox label='BB' checked={this.props.showBB} onClick={() => this.props.onClickShowBB()}
-                  style={{paddingRight: '20px'}}/>} content='combine HIR control flow to basic blocks' style={{paddingRight: '20px'}}
-                />
-                <Popup trigger={<Checkbox label='T/F branches' checked={this.props.showEdgeLabels}
-                  onClick={() => this.props.onClickShowEdgeLabels()} style={{paddingRight: '20px'}} />}
-                  content='display true/false branches'/>
                 <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
-                  content='displays the legend of the cfg network graph'/>
+                  content='displays the legend of the detail network graph'/>
               </div>
-              <NodeSearch graph={graph} valueSelectedHandler={cfgSearchValueSelected} style={{paddingRight: '20px', width: '100%'}} />
+              <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} style={{paddingRight: '20px', width: '100%'}} />
           </Segment>
           <Segment floated='right' compact size='mini'>
             <Popup trigger={
@@ -156,41 +147,41 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
               } content={statisticsTooltip} />
           </Segment>
           </Segment.Group>
-        <div id='cfgNetwork'>
+        <div id='detailNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-            getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
+              getVisNetwork={ (network) => { this._detailNetwork = network; } } />
           </div>
-          <Portal onClose={this._onHideLegend} open={this.state.showLegend}
-            closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
-            <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }} >
-                <Grid>
-                  <Grid.Row columns={2}>
-                    <Grid.Column>
-                      <Message>
-                        <Message.Header>cfg legend by example</Message.Header>
-                        <p>look at the tooltips on the nodes and edges for further details.</p>
-                      </Message>
-                    </Grid.Column>
-                    <Grid.Column>
-                      <Icon name='window close outline' size='big' onClick={this._onHideLegend} />
-                    </Grid.Column>
-                  </Grid.Row>
-                  <Grid.Row columns={1} stretched>
-                    <Grid.Column>
-                      <NetworkGraph graph={legend} options={legendOptions} style={{width: '400px', height: '300px'}} />
-                    </Grid.Column>
-                  </Grid.Row>
-                </Grid>
-            </Segment>
-          </Portal>
+              <Portal onClose={this._onHideLegend} open={this.state.showLegend}
+                closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
+                <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }} >
+                    <Grid>
+                      <Grid.Row columns={2}>
+                        <Grid.Column>
+                          <Message>
+                            <Message.Header>legend by example</Message.Header>
+                            <p>look at the tooltips on the nodes and edges for further details.</p>
+                          </Message>
+                        </Grid.Column>
+                        <Grid.Column>
+                          <Icon name='window close outline' size='big' onClick={this._onHideLegend} />
+                        </Grid.Column>
+                      </Grid.Row>
+                      <Grid.Row columns={1} stretched>
+                        <Grid.Column>
+                          <NetworkGraph graph={legend} options={legendOptions} style={{width: '400px', height: '300px'}} />
+                        </Grid.Column>
+                      </Grid.Row>
+                    </Grid>
+                </Segment>
+              </Portal>
         </div>
       </div>
     );
   }
 }
 
-class CfgNode {
+class DetailNode {
   id: number;
   name: string;
   root: boolean;
@@ -214,7 +205,7 @@ class CfgNode {
   }
 }
 
-class CfgEdge {
+class DetailEdge {
   from: number;
   to: number;
   type: string;
@@ -236,40 +227,40 @@ class CfgEdge {
   }
 }
 
-class CfgGraphBuilder {
-  private _nodes: CfgNode[];
-  private _edges: CfgEdge[];
-  private _showBB: boolean;
-  private _showEdgeLabels: boolean;
-  private _cfgNodeMap: Map<number, CfgNode> = new Map();
-  private _cfgEdgeMap: Map<number, Array<CfgEdge>> = new Map();
+class DetailGraphBuilder {
+  private _nodes: DetailNode[];
+  private _edges: DetailEdge[];
+  private _selectedNode: number;
+  private _showAdjacentNodeDistance: number;
+  private _detailNodeMap: Map<number, DetailNode> = new Map();
+  private _detailEdgeMap: Map<number, Array<DetailEdge>> = new Map();
   private _maxLevel: number = 0;
 
-  constructor(nodes: Node[], edges: Edge[], showBB: boolean, showEdgeLabels: boolean) {
-    this._showBB = showBB;
-    this._showEdgeLabels = showEdgeLabels;
-    this._nodes = nodes.map(this._toCfgNode);
-    this._edges = edges.map(this._toCfgEdge);
+  constructor(nodes: Node[], edges: Edge[], selectedNode: number, showAdjacentNodeDistance: number) {
+    this._nodes = nodes.map(this._toDetailNode);
+    this._edges = edges.map(this._toDetailEdge);
+    this._selectedNode = selectedNode;
+    this._showAdjacentNodeDistance = showAdjacentNodeDistance;
 
     this.createLookupMaps();
-    if (this._showBB) {
-      this._collapseToBB();
-    }
     const root = this._findRoot();
     this._markBackedges(root, new Set<number>());
     this._edges.filter(e => e.backedge).forEach(e => { e.color = {color: '#EE0000'}; });
+
+    // set level 0 for all nodes which couldn't be reached by a dfs
     this._maxLevel = 0;
     this._setHierarchy(root, 0);
+    this._nodes.filter(n => n.level == undefined).forEach(n => { n.level = 0; });
   }
 
   // create node and edge lookups
   private createLookupMaps(): void {
-    this._nodes.forEach((n) => { this._cfgNodeMap.set(n.id, n); });
+    this._nodes.forEach((n) => { this._detailNodeMap.set(n.id, n); });
     this._edges.forEach((e) => {
-      let edgeList = this._cfgEdgeMap.get(e.from);
+      let edgeList = this._detailEdgeMap.get(e.from);
       if (edgeList == null) {
         edgeList = [];
-        this._cfgEdgeMap.set(e.from, edgeList);
+        this._detailEdgeMap.set(e.from, edgeList);
       }
       edgeList.push(e);
     });
@@ -303,31 +294,27 @@ class CfgGraphBuilder {
     return graph as JSON;
   }
 
-  private _toCfgNode = (node: Node): CfgNode => {
-    return new CfgNode(node,
-      this._getNodeDisplayString(node, true),
+  private _toDetailNode = (node: Node): DetailNode => {
+    return new DetailNode(node,
+      this._getNodeDisplayString(node, false),
       this._getNodeBackgroundColor(node.name)
     );
   }
 
-  private _toCfgEdge = (edge: Edge): CfgEdge => {
+  private _toDetailEdge = (edge: Edge): DetailEdge => {
     const dashes = edge.type == 'bb' ? true : false;
-    let label = '';
-    if (this._showEdgeLabels && edge.trueBranch != undefined) {
-      label = edge.trueBranch ? 'T' : 'F';
-    }
-    return new CfgEdge(edge, label, this._getEdgeColor(edge), 2, dashes);
+    return new DetailEdge(edge, edge.type, this._getEdgeColor(edge), 2, dashes);
   }
 
-  private _findRoot = (): CfgNode | undefined => {
+  private _findRoot = (): DetailNode | undefined => {
     return this._nodes.find(node => node.root);
   }
 
-  private _markBackedges(node: CfgNode | undefined, visitedNodes: Set<number> ) {
+  private _markBackedges(node: DetailNode | undefined, visitedNodes: Set<number> ) {
     if (node == undefined) {
       return;
     }
-    const edges = this._cfgEdgeMap.get(node.id);
+    const edges = this._detailEdgeMap.get(node.id);
     if (!edges || edges.length == 0) {
       return;
     }
@@ -339,50 +326,14 @@ class CfgGraphBuilder {
         if (visitedNodes.has(childId)) {
             edge.backedge = true;
         } else {
-            const childNode = this._cfgNodeMap.get(edge.to);
+            const childNode = this._detailNodeMap.get(edge.to);
             this._markBackedges(childNode, visitedNodes);
         }
         visitedNodes.delete(node.id);
     });
   }
 
-  private _collapseToBB(): void {
-    this._nodes = this._nodes.filter((node) => { return node.name === 'BeginInst'; });
-    this._nodes.forEach((beginInst) => {
-
-      // BeginInst and EndInst have a 1:1 relationship
-      const bbEdgeArray = this._cfgEdgeMap.get(beginInst.id);
-      if (!bbEdgeArray) {
-        return;
-      }
-      const bbEdge = bbEdgeArray.filter((e) => { return e.type == 'bb'; })[0];
-      const endInst = this._cfgNodeMap.get(bbEdge.to);
-      if (!endInst) {
-        return;
-      }
-
-      // adjust the label
-      beginInst.label = 'BB #' + beginInst.id + ' => #' + endInst.id;
-      if (endInst.name !== 'GOTOInst') {
-        beginInst.label += '\n' + this._getNodeDisplayString(endInst.getNode(), true);
-      }
-
-      // adjust outgoing edges to the combined begin block
-      const edgeList = this._cfgEdgeMap.get(endInst.id);
-      if (edgeList) {
-        edgeList.forEach( e => { e.from = beginInst.id; });
-      }
-
-      // color is based on the endInsts
-      beginInst.color = this._getNodeBackgroundColor(endInst.name);
-      beginInst.endInstLink = endInst.id;
-    });
-
-    // remove all 'bb' edges
-    this._edges = this._edges.filter((e) => { return e.type !== 'bb'; });
-  }
-
- private _setHierarchy = (node: CfgNode | undefined, level: number): void => {
+ private _setHierarchy = (node: DetailNode | undefined, level: number): void => {
     if (node == undefined || node.level != null) {
         return;
     }
@@ -394,10 +345,10 @@ class CfgGraphBuilder {
         node.level = level;
 
         // todo use map instead of edges.filter...
-        const edges = this._cfgEdgeMap.get(node.id);
+        const edges = this._detailEdgeMap.get(node.id);
         if (edges) {
           edges.forEach(e => {
-            const childNode = this._cfgNodeMap.get(e.to);
+            const childNode = this._detailNodeMap.get(e.to);
             this._setHierarchy(childNode, level + 1);
           });
         }
@@ -411,9 +362,6 @@ class CfgGraphBuilder {
       case 'RETURNInst':
         return '#FFA807';
       case 'GOTOInst':
-        if (!this._showBB) {
-          return '#C7E2FC';
-        }
         return '#97C2FC';
       case 'PHIInst':
         return '#FFCA66';
@@ -448,7 +396,7 @@ class CfgGraphBuilder {
     if (simpleDisplay) {
       return this._getSimpleNodeDisplayString(node);
     }
-    let outputValue = '[" + node.id + "]: ' + node.name;
+    let outputValue = '[' + node.id + ']: ' + node.name;
     if (node.name === 'CONSTInst') {
       outputValue += ': ' + node.value;
     }
@@ -474,7 +422,6 @@ class CfgGraphBuilder {
     if (node.name === 'IFInst') {
       return 'IF [#' + node.operands[0] + ' ' + this._displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
     }
-
     return node.name + (node.operands ? node.operands.map((id) => { return '#' + id; }).toString() : '') ;
   }
 
