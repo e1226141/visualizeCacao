@@ -1,9 +1,10 @@
-import { Node, NodeType, Edge } from './data';
+import { Node, NodeType, Edge, EdgeType } from './data';
 
 export class DisplayNode {
     id: number;
     name: string;
     root: boolean;
+    nodeType: NodeType;
 
     private _node: Node;
     getNode = (): Node => {
@@ -29,6 +30,7 @@ export class DisplayEdge {
     to: number;
     type: string;
     trueBranch: boolean;
+    edgeType: EdgeType;
 
     // display attributes
     label: string;
@@ -180,8 +182,8 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
     }
 
     protected getEdgeColor(edge: Edge): string {
-        switch (edge.type) {
-            case 'cfg':
+        switch (edge.edgeType) {
+            case EdgeType.cfg:
                 if (edge.trueBranch) {
                     // the branches of an 'if' statement get different colors
                     if (edge.trueBranch) {
@@ -192,9 +194,9 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
                 }
                 // otherwise normal control flow
                 return '#87B2EC';
-            case 'op':
+            case EdgeType.op:
                 return '#AD85E4';
-            case 'sched':
+            case EdgeType.sched:
                 return '#FDBFC9';
             default:
                 return '#000000';

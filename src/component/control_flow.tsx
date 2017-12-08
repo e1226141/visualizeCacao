@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, NodeType, Edge } from '../data';
+import { Pass, Node, NodeType, Edge, EdgeType } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -237,7 +237,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   }
 
   protected toDisplayEdge (edge: Edge): DisplayEdge {
-    const dashes = edge.type == 'bb' ? true : false;
+    const dashes = edge.edgeType == EdgeType.bb;
     let label = '';
     if (this.showEdgeLabels && edge.trueBranch != undefined) {
       label = edge.trueBranch ? 'T' : 'F';
@@ -246,7 +246,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   }
 
   private collapseToBB(): void {
-    this.nodes = this.nodes.filter((node: DisplayNode) => node.nodeType === NodeType.BeginInst);
+    this.nodes = this.nodes.filter(node => node.nodeType === NodeType.BeginInst);
     this.nodes.forEach((beginInst: DisplayNode) => {
 
       // BeginInst and EndInst have a 1:1 relationship
@@ -254,7 +254,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
       if (!bbEdgeArray) {
         return;
       }
-      const bbEdge = bbEdgeArray.filter((e: DisplayEdge) => { return e.type == 'bb'; })[0];
+      const bbEdge = bbEdgeArray.filter(e => e.edgeType === EdgeType.bb)[0];
       const endInst = this.displayNodeMap.get(bbEdge.to);
       if (!endInst) {
         return;
@@ -278,7 +278,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     });
 
     // remove all 'bb' edges
-    this.edges = this.edges.filter((e: DisplayEdge) => { return e.type !== 'bb'; });
+    this.edges = this.edges.filter(e => e.edgeType !== EdgeType.bb);
   }
 
   protected getNodeBackgroundColor(nodeType: NodeType): string {

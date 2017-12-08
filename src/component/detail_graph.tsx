@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, NodeType, Edge } from '../data';
+import { Pass, Node, NodeType, Edge, EdgeType } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -226,7 +226,7 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   }
 
   toDisplayEdge (edge: Edge): DisplayEdge {
-    const dashes = edge.type == 'bb' ? true : false;
+    const dashes = edge.edgeType === EdgeType.bb;
     return new DisplayEdge(edge, edge.type, this.getEdgeColor(edge), 2, dashes);
   }
 }

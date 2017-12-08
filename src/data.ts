@@ -67,18 +67,40 @@ export class Edge implements Serializable<Edge> {
     to: number;
     type: string;
     trueBranch?: boolean;
+    edgeType: EdgeType;
 
     fromJSON(input: any) {
       this.from = input.from;
       this.to = input.to;
       this.type = input.type;
       this.trueBranch = input.trueBranch;
+
+      // map type to EdgeType enum
+      let edgeTypeAssignment: EdgeType | undefined = (<any>EdgeType)[this.type];
+      if (edgeTypeAssignment == undefined) {
+        this.edgeType = EdgeType.Unknown;
+      } else {
+        this.edgeType = edgeTypeAssignment;
+      }
+
       return this;
     }
 
     isCfgEdge = (): boolean => {
-      return ['cfg', 'bb'].some(type => this.type == type );
+      return [EdgeType.cfg, EdgeType.bb].some(type => this.edgeType == type );
     }
+}
+
+/**
+ * This enum definition helps to avoid comparison against string constants later on.
+ * A list containing all possible values for an input file can be generated in app.tsx.
+ */
+export enum EdgeType {
+  Unknown,    // artificial value when name can't be mapped
+  bb,
+  cfg,
+  op,
+  sched
 }
 
 export class Pass implements Serializable<Pass> {
