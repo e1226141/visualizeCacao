@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, Edge } from '../data';
+import { Pass, Node, NodeType, Edge } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -211,10 +211,10 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
 
   toJSONGraphLegend (): JSON {
     const nodes = [
-      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor('GOTOInst'), title: 'basic block with "GOTO" as EndInst'},
-      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor('IFInst'), title: 'basic block with an "IF" as EndInst'},
-      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor('GOTOInst'), title: 'basic block with an "GOTO" as EndInst'},
-      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor('RETURNInst'), title: 'basic block with an "RETURN" as EndInst'}
+      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
+      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(NodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
+      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
+      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(NodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
     ];
     const edges = [
       {from: 1, to: 2, color: {color: '#87B2EC'}},
@@ -232,7 +232,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   protected toDisplayNode (node: Node): DisplayNode {
     return new DisplayNode(node,
       this.getNodeDisplayString(node, true),
-      this.getNodeBackgroundColor(node.name)
+      this.getNodeBackgroundColor(node.nodeType)
     );
   }
 
@@ -246,7 +246,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   }
 
   private collapseToBB(): void {
-    this.nodes = this.nodes.filter((node: DisplayNode) => { return node.name === 'BeginInst'; });
+    this.nodes = this.nodes.filter((node: DisplayNode) => node.nodeType === NodeType.BeginInst);
     this.nodes.forEach((beginInst: DisplayNode) => {
 
       // BeginInst and EndInst have a 1:1 relationship
@@ -262,7 +262,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
 
       // adjust the label
       beginInst.label = 'BB #' + beginInst.id + ' => #' + endInst.id;
-      if (endInst.name !== 'GOTOInst') {
+      if (endInst.nodeType !== NodeType.GOTOInst) {
         beginInst.label += '\n' + this.getNodeDisplayString(endInst.getNode(), true);
       }
 
@@ -273,7 +273,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
       }
 
       // color is based on the endInsts
-      beginInst.color = this.getNodeBackgroundColor(endInst.name);
+      beginInst.color = this.getNodeBackgroundColor(endInst.nodeType);
       beginInst.endInstLink = endInst.id;
     });
 
@@ -281,10 +281,10 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     this.edges = this.edges.filter((e: DisplayEdge) => { return e.type !== 'bb'; });
   }
 
-  protected getNodeBackgroundColor(nodeName: string): string {
-    if (nodeName == 'GOTOInst' && !this.showBB) {
+  protected getNodeBackgroundColor(nodeType: NodeType): string {
+    if (nodeType == NodeType.GOTOInst && !this.showBB) {
       return '#C7E2FC';
     }
-    return super.getNodeBackgroundColor(nodeName);
+    return super.getNodeBackgroundColor(nodeType);
   }
 }

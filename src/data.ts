@@ -12,6 +12,7 @@ export class Node implements Serializable<Node> {
     value?: number;
     condition: string;
     sideEffects?: boolean;
+    nodeType: NodeType;
 
     fromJSON(input: any) {
       this.id = input.id;
@@ -23,12 +24,42 @@ export class Node implements Serializable<Node> {
       this.value = input.value;
       this.condition = input.condition;
       this.sideEffects = input.sideEffects;
+
+      // map node name to NodeType enum
+      let nodeTypeAssignment: NodeType | undefined = (<any>NodeType)[this.name];
+      if (nodeTypeAssignment == undefined) {
+        this.nodeType = NodeType.Unknown;
+      } else {
+        this.nodeType = nodeTypeAssignment;
+      }
       return this;
     }
 
     isCfgNode = (): boolean => {
-      return ['BeginInst', 'GOTOInst', 'RETURNInst', 'IFInst'].some(name => this.name === name );
+      return [NodeType.BeginInst, NodeType.GOTOInst, NodeType.RETURNInst, NodeType.IFInst].some(nameType => this.nodeType === nameType );
     }
+}
+
+/**
+ * This enum definition helps to avoid comparison against string constants later on.
+ * A list containing all possible values for an input file can be generated in app.tsx.
+ */
+export enum NodeType {
+  Unknown,      // artificial value when name can't be mapped
+  ADDInst,
+  ALOADInst,
+  AREFInst,
+  ARRAYBOUNDSCHECKInst,
+  ARRAYLENGTHInst,
+  ASTOREInst,
+  BeginInst,
+  CONSTInst,
+  GOTOInst,
+  IFInst,
+  LOADInst,
+  PHIInst,
+  RETURNInst,
+  SUBInst
 }
 
 export class Edge implements Serializable<Edge> {

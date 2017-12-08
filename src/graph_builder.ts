@@ -1,4 +1,4 @@
-import { Node, Edge } from './data';
+import { Node, NodeType, Edge } from './data';
 
 export class DisplayNode {
     id: number;
@@ -164,15 +164,15 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
         }
     }
 
-    protected getNodeBackgroundColor (nodeName: string): string {
-        switch (nodeName) {
-            case 'IFInst':
+    protected getNodeBackgroundColor (nodeType: NodeType): string {
+        switch (nodeType) {
+            case NodeType.IFInst:
                 return '#A1EC76';
-            case 'RETURNInst':
+            case NodeType.RETURNInst:
                 return '#FFA807';
-            case 'GOTOInst':
+            case NodeType.GOTOInst:
                 return '#97C2FC';
-            case 'PHIInst':
+            case NodeType.PHIInst:
                 return '#FFCA66';
             default:
                 return '#97C2FC';
@@ -206,12 +206,12 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
             return this.getSimpleNodeDisplayString(node);
         }
         let outputValue = '[' + node.id + ']: ' + node.name;
-        if (node.name === 'CONSTInst') {
+        if (node.nodeType === NodeType.CONSTInst) {
             outputValue += ': ' + node.value;
         }
         if (node.operands) {
             outputValue += '[';
-            if (node.name === 'IFInst') {
+            if (node.nodeType === NodeType.IFInst) {
                 outputValue += '#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1];
             } else {
                 outputValue += node.operands.map((id) => { return '#' + id; }).toString();
@@ -222,13 +222,13 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
     }
 
     protected getSimpleNodeDisplayString(node: Node): string {
-        if (node.name === 'CONSTInst') {
+        if (node.nodeType === NodeType.CONSTInst) {
             return 'Const: ' + node.value;
         }
-        if (node.name === 'RETURNInst') {
+        if (node.nodeType === NodeType.RETURNInst) {
             return 'RETURN' + (node.operands ? ' #' + node.operands[0] : '');
         }
-        if (node.name === 'IFInst') {
+        if (node.nodeType === NodeType.IFInst) {
             return 'IF [#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
         }
 
