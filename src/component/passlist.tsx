@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { Pass }  from '../data';
+import { Pass, Graph }  from '../data';
 import { Button } from 'semantic-ui-react';
 
 export interface IPassListProps {
   passes: Pass[];
   handleClick: (pass: Pass) => void;
+  ignorePrinterPasses: boolean;
+  passType: string;
 }
 
 export interface IPassListState {
@@ -26,9 +28,11 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
 
   render() {
     return (
-      <Button.Group vertical>
+      <div style={{height: '100%', overflow: 'scroll'}}>
+        <Button.Group vertical>
         {this.props.passes.map( (pass, index) => this._createListEntry(this.state, pass, index))}
       </Button.Group>
+      </div>
     );
   }
 
@@ -41,15 +45,22 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
   }
 
   private _createListEntry(state: IPassListState, pass: Pass, index: number): any  {
-    const name = this._getPassDisplayName(pass.name);
+
     const active = state.activeIndex === index;
-    const disabled = !pass.nodes || pass.nodes.length == 0;
+    const graph = pass.getGraph(this.props.passType);
+    if (!graph || !graph.nodes || graph.nodes.length == 0) {
+      return;
+    }
+    const name = this._getPassDisplayName(pass.name);
+    if (this.props.ignorePrinterPasses && name.endsWith('Printer')) {
+      return;
+    }
+
     return (
       <Button
         key={ name + index}
         active={active}
         fluid={true}
-        disabled={disabled}
         compact={true}
         value={index}
         size='tiny'

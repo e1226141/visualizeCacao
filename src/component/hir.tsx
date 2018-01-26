@@ -53,7 +53,8 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
         gridTemplateColumns: gridTemplateColumns,
     };
     let passList = this.state.showPasses
-      ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass) } />
+      ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
+                passType={'HIR'} />
       : <div></div>;
     return (
         <div>

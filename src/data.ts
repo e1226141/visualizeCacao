@@ -2,6 +2,40 @@ export interface Serializable<T> {
   fromJSON(input: Object): T;
 }
 
+/**
+ * This enum definition helps to avoid comparison against string constants later on.
+ * A list containing all possible values for an input file can be generated in app.tsx.
+ */
+export enum NodeType {
+  Unknown,      // artificial value when name can't be mapped
+  ADDInst,
+  ALOADInst,
+  AREFInst,
+  ARRAYBOUNDSCHECKInst,
+  ARRAYLENGTHInst,
+  ASTOREInst,
+  BeginInst,
+  CONSTInst,
+  GOTOInst,
+  IFInst,
+  LOADInst,
+  PHIInst,
+  RETURNInst,
+  SUBInst
+}
+
+/**
+ * This enum definition helps to avoid comparison against string constants later on.
+ * A list containing all possible values for an input file can be generated in app.tsx.
+ */
+export enum EdgeType {
+  Unknown,    // artificial value when name can't be mapped
+  bb,
+  cfg,
+  op,
+  sched
+}
+
 export class Node implements Serializable<Node> {
     id: number;
     name: string;
@@ -40,28 +74,6 @@ export class Node implements Serializable<Node> {
     }
 }
 
-/**
- * This enum definition helps to avoid comparison against string constants later on.
- * A list containing all possible values for an input file can be generated in app.tsx.
- */
-export enum NodeType {
-  Unknown,      // artificial value when name can't be mapped
-  ADDInst,
-  ALOADInst,
-  AREFInst,
-  ARRAYBOUNDSCHECKInst,
-  ARRAYLENGTHInst,
-  ASTOREInst,
-  BeginInst,
-  CONSTInst,
-  GOTOInst,
-  IFInst,
-  LOADInst,
-  PHIInst,
-  RETURNInst,
-  SUBInst
-}
-
 export class Edge implements Serializable<Edge> {
     from: number;
     to: number;
@@ -91,27 +103,35 @@ export class Edge implements Serializable<Edge> {
     }
 }
 
-/**
- * This enum definition helps to avoid comparison against string constants later on.
- * A list containing all possible values for an input file can be generated in app.tsx.
- */
-export enum EdgeType {
-  Unknown,    // artificial value when name can't be mapped
-  bb,
-  cfg,
-  op,
-  sched
+export class Graph implements Serializable<Graph> {
+  type: string;
+  nodes: Node[];
+  edges: Edge[];
+
+  fromJSON(input: any) {
+    this.type = input.type;
+    this.nodes = input.nodes.map((node: any) => new Node().fromJSON(node));
+    this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
+    return this;
+  }
 }
 
 export class Pass implements Serializable<Pass> {
     name: string;
-    nodes: Node[];
-    edges: Edge[];
+    time: number;
+    graphs: Graph[];
+
+    getGraph(type: string): Graph | undefined {
+      if (this.graphs) {
+        return this.graphs.find( (graph) => graph.type == type);
+      }
+      return;
+    }
 
     fromJSON(input: any) {
       this.name = input.name;
-      this.nodes = input.nodes.map((node: any) => new Node().fromJSON(node));
-      this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
+      this.time = input.time;
+      this.graphs = input.graph.map((graph: any) => new Graph().fromJSON(graph));
       return this;
     }
 }

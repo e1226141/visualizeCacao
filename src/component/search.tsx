@@ -5,7 +5,7 @@ export interface ISearchProps {
     getDisplayValue: (suggestion: any) => string;
     getValues: (data: any) => any;
     onRenderSuggestion: (data: any) => any;
-    onRenderInputComponent: (inputProps: any) => any;    
+    onRenderInputComponent: (inputProps: any) => any;
     onValueSelected: (selection: any) => void;
     style?: React.CSSProperties;
 }
