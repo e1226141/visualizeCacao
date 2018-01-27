@@ -2,7 +2,7 @@ import * as React from 'react';
 import { HIR } from './hir';
 import { OptimizedMethod, Pass, Graph } from '../data';
 import { Navigation, PageType } from './navigation';
-import { Segment, Header, List, Button, Icon } from 'semantic-ui-react';
+import { Segment, Header, Table, Button, Icon } from 'semantic-ui-react';
 
 export interface AppProps {
   optimizedMethod: OptimizedMethod;
@@ -36,8 +36,11 @@ export class App extends React.Component<AppProps, AppState> {
       case PageType.HIR:
         content = this._renderHIR();
         break;
-      case PageType.MAIN:
+      case PageType.LIR:
         content = this._renderLIR();
+        break;
+      case PageType.PASS_DEPENDENCY:
+        content = this._renderPassDependency();
         break;
       default: content = (<div>unknown or unsupported page type: {this.state.pageType} </div>);
     }
@@ -68,7 +71,7 @@ export class App extends React.Component<AppProps, AppState> {
     const returnType = this.getReturnType(this.props.optimizedMethod.desc);
     const parameterTypes = this.getParameterTypes(this.props.optimizedMethod.desc);
     return (
-        <div>
+        <div style={{height: '100vh', overflow: 'scroll'}}>
           <Segment raised>
             <Header as='h2'>
               {this.props.optimizedMethod.class}
@@ -78,13 +81,29 @@ export class App extends React.Component<AppProps, AppState> {
           </Header>
           </Segment>
           <Segment>
-            <Header as='h3'>
-              number of passes: {this.props.optimizedMethod.passes.length} <br/>
-              total time: {totalTime} ns
-            </Header>
-            <List>
-              {this.props.optimizedMethod.passes.map((pass, index) => this._createPassEntry(pass, index))}
-            </List>
+            <div className='scrolling content' >
+              <Table celled striped compact  size='small' collapsing>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>Index</Table.HeaderCell>
+                    <Table.HeaderCell>Pass</Table.HeaderCell>
+                    <Table.HeaderCell>time[ns]</Table.HeaderCell>
+                    <Table.HeaderCell>time[%]</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {this.props.optimizedMethod.passes.map((pass, index) => this._createPassEntry(pass, index, totalTime))}
+                </Table.Body>
+                <Table.Footer>
+                  <Table.Row>
+                    <Table.HeaderCell/>
+                    <Table.HeaderCell></Table.HeaderCell>
+                    <Table.HeaderCell textAlign='right'>{totalTime}</Table.HeaderCell>
+                    <Table.HeaderCell textAlign='right'>100.00</Table.HeaderCell>
+                  </Table.Row>
+              </Table.Footer>
+              </Table>
+            </div>
           </Segment>
         </div>
     );
@@ -98,9 +117,19 @@ export class App extends React.Component<AppProps, AppState> {
     return (<div>not yet implemented</div>);
   }
 
-  private _createPassEntry(pass: Pass, index: number): any {
+  private _renderPassDependency(): any {
+    return (<div>not yet implemented</div>);
+  }
+
+  private _createPassEntry(pass: Pass, index: number, totalTime: number): any {
+    let percentage = pass.time / totalTime * 100;
     return (
-      <List.Item key={index}>{pass.name} ({pass.time}ns)</List.Item>
+    <Table.Row key={index}>
+      <Table.Cell>{index + 1}</Table.Cell>
+      <Table.Cell>{pass.name}</Table.Cell>
+      <Table.Cell textAlign='right'>{pass.time}</Table.Cell>
+      <Table.Cell textAlign='right'>{percentage.toFixed(1)}</Table.Cell>
+    </Table.Row>
     );
   }
 
