@@ -3,7 +3,7 @@ import { OptimizedMethod, Pass}  from '../data';
 import { ControlFlow } from './control_flow';
 import { DetailGraph } from './detail_graph';
 import { PassList } from './passlist';
-import { Icon } from 'semantic-ui-react';
+import { Button, Icon } from 'semantic-ui-react';
 
 export interface IHIRProps {
     optimizedMethod: OptimizedMethod;
@@ -14,7 +14,7 @@ export interface IHIRState {
   showBB: boolean;
   showPasses: boolean;
   showEdgeLabels: boolean;
-  ShowAdjacentNodeDistance: number;
+  showAdjacentNodeDistance: number;
 }
 
 export class HIR extends React.Component<IHIRProps, IHIRState> {
@@ -25,7 +25,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
       showBB: true,
       showPasses: true,
       showEdgeLabels: true,
-      ShowAdjacentNodeDistance: 2
+      showAdjacentNodeDistance: 2
     };
     this._setSelectedPass = this._setSelectedPass.bind(this);
     this._toggleShowBB = this._toggleShowBB.bind(this);
@@ -59,14 +59,14 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
     return (
         <div>
           <div style={style}>
-            <div title='show/hide pass-list'>
-              <Icon name='list' size='big' onClick={this._toggleShowPasses} />
+            <div>
+              <Button onClick={() => this._toggleShowPasses()} title='show/hide pass-list'><Icon name='list' size='big' /></Button>
             </div>
             {passList}
             <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
               onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
               networkGraphStyle={{height: '1024px'}}/>
-            <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.ShowAdjacentNodeDistance}
+            <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.showAdjacentNodeDistance}
               networkGraphStyle={{height: '1024px'}}/>
           </div>
         </div>

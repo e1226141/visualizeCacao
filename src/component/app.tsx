@@ -1,54 +1,106 @@
 import * as React from 'react';
 import { HIR } from './hir';
 import { OptimizedMethod, Pass, Graph } from '../data';
-import { Segment, Header, List} from 'semantic-ui-react';
+import { Navigation, PageType } from './navigation';
+import { Segment, Header, List, Button, Icon } from 'semantic-ui-react';
 
 export interface AppProps {
   optimizedMethod: OptimizedMethod;
 }
 
-export class App extends React.Component<AppProps, {}> {
+export interface AppState {
+  pageType: PageType;
+}
+
+export class App extends React.Component<AppProps, AppState> {
   // enable this flag to generate a template for the NodeType and EdgeType enum in data.ts
   private showContainedTypes = false;
+
+  constructor(props: AppProps) {
+    super(props);
+    this.state = {
+      pageType: PageType.MAIN
+    };
+  }
 
   render() {
     if (this.showContainedTypes) {
       this.listNodeNames();
       this.listEdgeTypes();
     }
+    let content;
+    switch (this.state.pageType) {
+      case PageType.MAIN:
+        content = this._renderMainPage();
+        break;
+      case PageType.HIR:
+        content = this._renderHIR();
+        break;
+      case PageType.MAIN:
+        content = this._renderLIR();
+        break;
+      default: content = (<div>unknown or unsupported page type: {this.state.pageType} </div>);
+    }
+    let gridTemplateColumns = '0.1fr 10fr';
+    const style = {
+        display: 'grid',
+        height: '100%',
+        gridTemplateColumns: gridTemplateColumns,
+    };
+    return (
+      <div style={style}>
+        <Navigation selectedPage={this.state.pageType} onSelectPage={this._onSelectPage.bind(this)}></Navigation>
+        {content}
+      </div>
+      );
+  }
+
+  private _onSelectPage(newPageType: PageType): void {
+    console.log('_changeToPage: ' + newPageType);
+    if (this.state.pageType != newPageType) {
+      this.setState((prevState) => ({ ...prevState, pageType: newPageType}));
+    }
+  }
+
+  //<HIR optimizedMethod={this.props.optimizedMethod} />
+  private _renderMainPage(): any {
     const totalTime = this.props.optimizedMethod.passes.map(pass => pass.time).reduce((pv, cv) => pv + cv, 0);
     const returnType = this.getReturnType(this.props.optimizedMethod.desc);
     const parameterTypes = this.getParameterTypes(this.props.optimizedMethod.desc);
     return (
-      <div>
-         <Segment raised>
-         <Header as='h2'>
-          {this.props.optimizedMethod.class}
-         </Header>
-         <Header as='h2'>
-          {returnType} {this.props.optimizedMethod.method} ({parameterTypes});
-         </Header>
-         <Header as='h3'>
-          number of passes: {this.props.optimizedMethod.passes.length}
-         </Header>
-         <Header as='h3'>
-         total time: {totalTime}
-         </Header>
-        </Segment>
-        <Segment>
-          <List>
-           {this.props.optimizedMethod.passes.map( (pass, index) => this._createPassEntry(pass, index))}
-           </List>
-        </Segment>
-      </div>
+        <div>
+          <Segment raised>
+            <Header as='h2'>
+              {this.props.optimizedMethod.class}
+            </Header>
+            <Header as='h1'>
+            {returnType} {this.props.optimizedMethod.method} ({parameterTypes});
+          </Header>
+          </Segment>
+          <Segment>
+            <Header as='h3'>
+              number of passes: {this.props.optimizedMethod.passes.length} <br/>
+              total time: {totalTime} ns
+            </Header>
+            <List>
+              {this.props.optimizedMethod.passes.map((pass, index) => this._createPassEntry(pass, index))}
+            </List>
+          </Segment>
+        </div>
     );
-
-    //<HIR optimizedMethod={this.props.optimizedMethod} />
   }
 
-  private _createPassEntry(pass: Pass, index: number): any  {
+  private _renderHIR(): any {
+    return (<HIR optimizedMethod={this.props.optimizedMethod} />);
+  }
+
+  private _renderLIR(): any {
+    return (<div>not yet implemented</div>);
+  }
+
+  private _createPassEntry(pass: Pass, index: number): any {
     return (
-      <List.Item>{pass.name} ({pass.time}ns)</List.Item>
+      <List.Item key={index}>{pass.name} ({pass.time}ns)</List.Item>
     );
   }
 
@@ -65,7 +117,7 @@ export class App extends React.Component<AppProps, {}> {
 
     let recognizedTypes: string = '';
     let nextParameterType = '';
-    while (signature.length > 0) {      
+    while (signature.length > 0) {
       const curChar = signature.charAt(0);
       signature = signature.substring(1);
       nextParameterType += curChar;
