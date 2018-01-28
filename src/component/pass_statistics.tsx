@@ -13,78 +13,84 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
     const totalTime = this.props.optimizedMethod.passes.map(pass => pass.time).reduce((pv, cv) => pv + cv, 0);
     const returnType = this.getReturnType(this.props.optimizedMethod.desc);
     const parameterTypes = this.getParameterTypes(this.props.optimizedMethod.desc);
-    let chartData = this.props.optimizedMethod.passes.map((pass, index) => {
-      let percentage = pass.time / totalTime * 100;
-      return {
-          x: index + 1,
-          y: percentage,
-          label: pass.name + '(' + pass.time + ' ns / ' + percentage.toFixed(1) + '%)'
-      };
-    });
-    //console.log(passTimes);
-    chartData.forEach(data => console.log(data));
 
     return (
       <div style={{ height: '100vh', overflow: 'scroll' }}>
-       <Segment.Group raised style={{padding: 0, margin: 0}}>
-        <Segment raised>
-          <Header as='h2'>
-            {this.props.optimizedMethod.class}
+        <Segment.Group raised style={{ padding: 0, margin: 0 }}>
+          <Segment raised>
+            <Header as='h2'>
+              {this.props.optimizedMethod.class}
+            </Header>
+            <Header as='h1'>
+              {returnType} {this.props.optimizedMethod.method} ({parameterTypes});
           </Header>
-          <Header as='h1'>
-            {returnType} {this.props.optimizedMethod.method} ({parameterTypes});
-          </Header>
-        </Segment>
-        <Segment className='scrolling content'>
-          <Segment.Group horizontal raised style={{padding: 0, margin: 0}} compact>
-            <Segment floated='left'>
-              <Table celled striped compact size='small' collapsing>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell>Index</Table.HeaderCell>
-                    <Table.HeaderCell>Pass</Table.HeaderCell>
-                    <Table.HeaderCell>time[ns]</Table.HeaderCell>
-                    <Table.HeaderCell>time[%]</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {this.props.optimizedMethod.passes.map((pass, index) => this._createPassEntry(pass, index, totalTime))}
-                </Table.Body>
-                <Table.Footer>
-                  <Table.Row>
-                    <Table.HeaderCell />
-                    <Table.HeaderCell></Table.HeaderCell>
-                    <Table.HeaderCell textAlign='right'>{totalTime}</Table.HeaderCell>
-                    <Table.HeaderCell textAlign='right'>100.00</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Footer>
-              </Table>
-            </Segment>
-            <Segment>
-            <VictoryChart height={400} width={400}
-              theme={VictoryTheme.material}
-              domainPadding={10}>
-                <VictoryScatter data={chartData}
-                          bubbleProperty='y'
-                          minBubbleSize={3}
-                          maxBubbleSize={10}
-                          style={{ labels: { fill: 'black', fontSize: 12} }}
-                          labels={(d) => d.x}
-                          labelComponent={<VictoryTooltip></VictoryTooltip>}
-                        />
-                <VictoryAxis dependentAxis
-                  tickFormat={(tick) => `${tick}%`}
-                />
-                <VictoryAxis
-                  tickFormat={['compiler passes']}
-                />
-            </VictoryChart>
-            </Segment>
-          </Segment.Group>
-        </Segment>
-      </Segment.Group>
+          </Segment>
+          <Segment className='scrolling content'>
+            <Segment.Group horizontal raised style={{ padding: 0, margin: 0 }} compact>
+              {this._createTable(totalTime)}
+              {this._createChart(totalTime)}
+            </Segment.Group>
+          </Segment>
+        </Segment.Group>
       </div>
     );
+  }
+
+  private _createTable(totalTime: number) {
+    return <Segment floated='left'>
+      <Table celled striped compact size='small' collapsing>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Index</Table.HeaderCell>
+            <Table.HeaderCell>Pass</Table.HeaderCell>
+            <Table.HeaderCell>time[ns]</Table.HeaderCell>
+            <Table.HeaderCell>time[%]</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {this.props.optimizedMethod.passes.map((pass, index) => this._createPassEntry(pass, index, totalTime))}
+        </Table.Body>
+        <Table.Footer>
+          <Table.Row>
+            <Table.HeaderCell />
+            <Table.HeaderCell></Table.HeaderCell>
+            <Table.HeaderCell textAlign='right'>{totalTime}</Table.HeaderCell>
+            <Table.HeaderCell textAlign='right'>100.00</Table.HeaderCell>
+          </Table.Row>
+        </Table.Footer>
+      </Table>
+    </Segment>;
+  }
+
+  private _createChart(totalTime: number) {
+    let chartData = this.props.optimizedMethod.passes.map((pass, index) => {
+      let percentage = pass.time / totalTime * 100;
+      return {
+        x: index + 1,
+        y: percentage,
+        label: pass.name + '(' + pass.time + ' ns / ' + percentage.toFixed(1) + '%)'
+      };
+    });
+    return <Segment>
+      <VictoryChart height={400} width={400}
+        theme={VictoryTheme.material}
+        domainPadding={10}>
+        <VictoryScatter data={chartData}
+          bubbleProperty='y'
+          minBubbleSize={3}
+          maxBubbleSize={10}
+          style={{ labels: { fill: 'black', fontSize: 12 } }}
+          labels={(d) => d.x}
+          labelComponent={<VictoryTooltip></VictoryTooltip>}
+        />
+        <VictoryAxis dependentAxis
+          tickFormat={(tick) => `${tick}%`}
+        />
+        <VictoryAxis
+          tickFormat={['compiler passes']}
+        />
+      </VictoryChart>
+    </Segment>;
   }
 
   private getReturnType(signature: string): string {

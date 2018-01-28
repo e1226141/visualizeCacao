@@ -1,5 +1,11 @@
-export interface Serializable<T> {
-  fromJSON(input: Object): T;
+/**
+ * This enum definitions help to avoid comparisons against the string constants later on.
+ */
+export enum GraphType {
+  Unknown,      // artificial value when name can't be mapped
+  PassDependencyGraph,
+  HIR,
+  LIR
 }
 
 /**
@@ -34,6 +40,10 @@ export enum EdgeType {
   cfg,
   op,
   sched
+}
+
+export interface Serializable<T> {
+  fromJSON(input: Object): T;
 }
 
 export class Node implements Serializable<Node> {
@@ -105,11 +115,18 @@ export class Edge implements Serializable<Edge> {
 
 export class Graph implements Serializable<Graph> {
   type: string;
+  graphType: GraphType;
   nodes: Node[];
   edges: Edge[];
 
   fromJSON(input: any) {
     this.type = input.type;
+    let graphTypeAssignment: GraphType | undefined = (<any>GraphType)[this.type];
+    if (graphTypeAssignment == undefined) {
+      this.graphType = GraphType.Unknown;
+    } else {
+      this.graphType = graphTypeAssignment;
+    }
     this.nodes = input.nodes.map((node: any) => new Node().fromJSON(node));
     this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
     return this;
@@ -121,9 +138,9 @@ export class Pass implements Serializable<Pass> {
     time: number;
     graphs: Graph[];
 
-    getGraph(type: string): Graph | undefined {
+    getGraph(graphType: GraphType): Graph | undefined {
       if (this.graphs) {
-        return this.graphs.find( (graph) => graph.type == type);
+        return this.graphs.find( (graph) => graph.graphType == graphType);
       }
       return;
     }
@@ -140,12 +157,21 @@ export class OptimizedMethod implements Serializable<OptimizedMethod> {
     class: string;
     method: string;
     desc: string;
+    graphs: Graph[];
     passes: Pass[];
+
+    getGraph(graphType: GraphType): Graph | undefined {
+      if (this.graphs) {
+        return this.graphs.find( (graph) => graph.graphType == graphType);
+      }
+      return;
+    }
 
     fromJSON(input: any) {
       this.class = input.class;
       this.method = input.method;
       this.desc = input.desc;
+      this.graphs = input.graph.map((graph: any) => new Graph().fromJSON(graph));
       this.passes = input.passes.map((pass: any) => new Pass().fromJSON(pass));
       return this;
     }

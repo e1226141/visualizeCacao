@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { OptimizedMethod, Pass}  from '../data';
+import { OptimizedMethod, Pass, GraphType }  from '../data';
 import { ControlFlow } from './control_flow';
 import { DetailGraph } from './detail_graph';
 import { PassList } from './passlist';
@@ -54,7 +54,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
     };
     let passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
-                passType={'HIR'} />
+                graphType={GraphType.HIR} />
       : <div></div>;
     return (
         <div>

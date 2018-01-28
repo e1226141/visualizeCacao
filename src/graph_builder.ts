@@ -145,20 +145,23 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
     }
 
     private setHierarchyDfs = (node: N | undefined, level: number): void => {
-        if (node == undefined || node.level != null) {
+        if (node == undefined || level > this._nodes.length) {
             return;
         }
         if (level > this.maxLevel) {
             this.maxLevel = level;
         }
-        //console.log("set node.level to " + level + " for id: " + node.id + " and type " + node.name);
-        if (node.level == undefined || node.level > level) {
-            node.level = level;
 
-            // todo use map instead of edges.filter...
+        if (node.level == undefined || level > node.level) {
+            console.log('change node.level to ' + level + ' from ' + node.level + ' for id: ' + node.id + ' and type ' + node.name);
+            node.level = level;
             const edges = this.displayEdgeMap.get(node.id);
             if (edges) {
                 edges.forEach(e => {
+                    // with backedges this would lead to an endless loop
+                    if (e.backedge == true) {
+                        return;
+                    }
                     const childNode = this.displayNodeMap.get(e.to);
                     this.setHierarchyDfs(childNode, level + 1);
                 });

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, NodeType, Edge, EdgeType, Graph } from '../data';
+import { OptimizedMethod, Node, NodeType, Edge, EdgeType, Graph, GraphType} from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -7,7 +7,8 @@ import { Network } from 'vis';
 import { Segment, Statistic, Popup, Portal, Grid, Message, Icon } from 'semantic-ui-react';
 
 export interface IPassDependencyProps {
-  pass: Pass;
+  optimizedMethod: OptimizedMethod;
+  networkGraphStyle: React.CSSProperties;
 }
 
 export interface IPassDependencyState {
@@ -20,7 +21,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
   constructor(props: IPassDependencyProps) {
     super(props);
     this.state = {
-      showLegend: false 
+      showLegend: false
     };
   }
 
@@ -41,26 +42,27 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
           inherit: false
         },
         smooth: {
-          enabled: true,
+          enabled: false,
           type: 'discrete'
         },
         chosen: false
       },
       layout: {
-        improvedLayout: true,
+        improvedLayout: false,
         hierarchical: {
           enabled: true,
-          levelSeparation: 80,
-          nodeSpacing: 180,
-          blockShifting: true,
-          edgeMinimization: true,
-          parentCentralization: true,
-          direction: 'UD',
-          sortMethod: 'hubsize'
+          nodeSpacing: 425,
+          blockShifting: false,
+          edgeMinimization: false,
+          sortMethod: 'directed'
         }
       },
       physics: {
-        enabled: false
+        enabled: false,
+        barnesHut: {
+          avoidOverlap: 1
+        },
+        solver: 'barnesHut'
       }
     };
     return options as JSON;
@@ -82,7 +84,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
         improvedLayout: true,
         hierarchical: {
           enabled: true,
-          direction: 'UD',
+          direction: 'DU',
           sortMethod: 'hubsize'
         }
       },
@@ -96,15 +98,15 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
   private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
 
   render() {
-    const dependencyGraph: Graph | undefined = this.props.pass.getGraph('HIR');
-    if (!dependencyGraph) {
+    const passDependencyGraph : Graph | undefined = this.props.optimizedMethod.getGraph(GraphType.PassDependencyGraph);
+    if (!passDependencyGraph) {
       return;
     }
-
+    const lastPass = this.props.optimizedMethod.passes[this.props.optimizedMethod.passes.length - 1];
     const graphBuilder = new DetailGraphBuilder(
-      dependencyGraph.nodes,
-      dependencyGraph.edges,
-      this.state.selectedNode
+      passDependencyGraph.nodes,
+      passDependencyGraph.edges,
+      lastPass.name
     );
     const graph: JSON = graphBuilder.toJSONGraph();
     const legend: JSON = graphBuilder.toJSONGraphLegend();
@@ -120,8 +122,8 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
         console.log(edges);
       }
     };
-    const statisticsLabel = 'instructions';
-    const statisticsTooltip = 'number of instructions';
+    const statisticsLabel = 'passes';
+    const statisticsTooltip = 'number of passes';
     let searchValueSelected = (selection: any) => {
       console.log('selected: ' + selection.id);
       const id = selection.id;
@@ -183,17 +185,33 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
 }
 
 class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
-  private selectedNode: number;
 
-  constructor(nodes: Node[], edges: Edge[], pSelectedNode: number) {
+  constructor(nodes: Node[], edges: Edge[], nameOfLastPass: string) {
     super();
-    this.selectedNode = pSelectedNode;
     this.init(nodes, edges);
 
-    const root = this.findRoot();
-    this.markBackedges(root, new Set<number>());
-    this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
+    const root = this.nodes.find(node => node.name == nameOfLastPass);
+    if (!root) {
+      return;
+    }
     this.setHierarchy(root);
+
+    // adjust the level of nodes, which have parent nodes and therefore will be set to 
+    // level 0
+    this.nodes.filter(node => node.level == 0).forEach(node => {
+      const edges = this.displayEdgeMap.get(node.id);
+      if (!edges || edges.length == 0) {
+          return;
+      }
+      const nodeToLevels = edges.map(e => {
+        const nodeTo = this.displayNodeMap.get(e.to);
+        if (nodeTo && nodeTo.level) {
+          return nodeTo.level - 1;
+        }
+        return node.level ? node.level - 1 : -1;
+      });
+      node.level = Math.min.apply(Math, nodeToLevels);
+    });
   }
 
  toJSONGraphLegend (): JSON {
@@ -218,13 +236,23 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
 
   toDisplayNode (node: Node): DisplayNode {
     return new DisplayNode(node,
-      this.getNodeDisplayString(node, false),
+      this.getNodeDisplayString(node),
       this.getNodeBackgroundColor(node.nodeType)
     );
   }
 
+  protected getNodeDisplayString(node: Node): string {
+    return node.name;
+  }
+
   toDisplayEdge (edge: Edge): DisplayEdge {
-    const dashes = edge.edgeType === EdgeType.bb;
-    return new DisplayEdge(edge, edge.type, this.getEdgeColor(edge), 2, dashes);
+    const result: DisplayEdge = new DisplayEdge(edge, edge.type, this.getEdgeColor(edge), 2, /*dashes*/ false);
+    // reverse from and to for '*before' edges
+    if (result.type == 'run-before' || result.type == 'schedule-before') {
+      const temp = result.from;
+      result.from = result.to;
+      result.to = temp;
+    }
+    return result;
   }
 }
