@@ -24,3 +24,7 @@ https://github.com/electron/electron/issues/10151
 
 JSON to TS: 
 http://json2ts.com/
+
+Victory charting
+npm install victory --save
+npm install @types/victory --save

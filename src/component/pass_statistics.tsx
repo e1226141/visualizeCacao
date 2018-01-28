@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { OptimizedMethod, Pass } from '../data';
+import { VictoryChart, VictoryStack, VictoryBar, VictoryAxis, VictoryTooltip, VictoryTheme } from 'victory';
 import { Segment, Header, Table } from 'semantic-ui-react';
+import SegmentGroup from 'semantic-ui-react/dist/commonjs/elements/Segment/SegmentGroup';
 
 export interface IPassStatisticsProps {
   optimizedMethod: OptimizedMethod;
@@ -11,19 +13,32 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
     const totalTime = this.props.optimizedMethod.passes.map(pass => pass.time).reduce((pv, cv) => pv + cv, 0);
     const returnType = this.getReturnType(this.props.optimizedMethod.desc);
     const parameterTypes = this.getParameterTypes(this.props.optimizedMethod.desc);
+    let chartData = this.props.optimizedMethod.passes.map((pass, index) => {
+      let percentage = pass.time / totalTime * 100;
+      return {
+          x: index + 1,
+          y: percentage,
+          label: pass.name + '(' + pass.time + ' ns / ' + percentage.toFixed(1) + '%)'
+      };
+    });
+    //console.log(passTimes);
+    chartData.forEach(data => console.log(data));
+
     return (
-        <div style={{height: '100vh', overflow: 'scroll'}}>
-          <Segment raised>
-            <Header as='h2'>
-              {this.props.optimizedMethod.class}
-            </Header>
-            <Header as='h1'>
+      <div style={{ height: '100vh', overflow: 'scroll' }}>
+       <Segment.Group raised style={{padding: 0, margin: 0}}>
+        <Segment raised>
+          <Header as='h2'>
+            {this.props.optimizedMethod.class}
+          </Header>
+          <Header as='h1'>
             {returnType} {this.props.optimizedMethod.method} ({parameterTypes});
           </Header>
-          </Segment>
-          <Segment>
-            <div className='scrolling content' >
-              <Table celled striped compact  size='small' collapsing>
+        </Segment>
+        <Segment className='scrolling content'>
+          <Segment.Group horizontal raised style={{padding: 0, margin: 0}} compact>
+            <Segment floated='left'>
+              <Table celled striped compact size='small' collapsing>
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>Index</Table.HeaderCell>
@@ -37,16 +52,33 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
                 </Table.Body>
                 <Table.Footer>
                   <Table.Row>
-                    <Table.HeaderCell/>
+                    <Table.HeaderCell />
                     <Table.HeaderCell></Table.HeaderCell>
                     <Table.HeaderCell textAlign='right'>{totalTime}</Table.HeaderCell>
                     <Table.HeaderCell textAlign='right'>100.00</Table.HeaderCell>
                   </Table.Row>
-              </Table.Footer>
+                </Table.Footer>
               </Table>
-            </div>
-          </Segment>
-        </div>
+            </Segment>
+            <Segment>
+            <VictoryChart height={400} width={400}
+              theme={VictoryTheme.material}
+              domainPadding={10}>
+                <VictoryStack>
+                  <VictoryBar data={chartData} labelComponent={<VictoryTooltip></VictoryTooltip>}/>
+                </VictoryStack>
+                <VictoryAxis dependentAxis
+                  tickFormat={(tick) => `${tick}%`}
+                />
+                <VictoryAxis
+                  tickFormat={['compiler passes']}
+                />
+            </VictoryChart>
+            </Segment>
+          </Segment.Group>
+        </Segment>
+      </Segment.Group>
+      </div>
     );
   }
 
@@ -123,12 +155,12 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
   private _createPassEntry(pass: Pass, index: number, totalTime: number): any {
     let percentage = pass.time / totalTime * 100;
     return (
-    <Table.Row key={index}>
-      <Table.Cell>{index + 1}</Table.Cell>
-      <Table.Cell>{pass.name}</Table.Cell>
-      <Table.Cell textAlign='right'>{pass.time}</Table.Cell>
-      <Table.Cell textAlign='right'>{percentage.toFixed(1)}</Table.Cell>
-    </Table.Row>
+      <Table.Row key={index}>
+        <Table.Cell>{index + 1}</Table.Cell>
+        <Table.Cell>{pass.name}</Table.Cell>
+        <Table.Cell textAlign='right'>{pass.time}</Table.Cell>
+        <Table.Cell textAlign='right'>{percentage.toFixed(1)}</Table.Cell>
+      </Table.Row>
     );
   }
 }
