@@ -18,16 +18,17 @@ export class Navigation extends React.Component<INavigationProps, {}> {
   render() {
     return (
       <div>
-        <Button onClick={() => this.props.onSelectPage(PageType.MAIN)}>
+        <Button onClick={() => this.props.onSelectPage(PageType.MAIN)} active={PageType.MAIN == this.props.selectedPage}>
           <Icon name='pie chart' size='big' title='show performance charts'/>
         </Button>
-        <Button onClick={() => this.props.onSelectPage(PageType.HIR)}>
+        <Button onClick={() => this.props.onSelectPage(PageType.HIR)} active={PageType.HIR == this.props.selectedPage}>
           <Icon name='sitemap' size='big' title='show HIR'/>
         </Button>
-        <Button onClick={() => this.props.onSelectPage(PageType.LIR)}>
+        <Button onClick={() => this.props.onSelectPage(PageType.LIR)} active={PageType.LIR == this.props.selectedPage}>
           <Icon name='code' size='big' title='show LIR'/>
         </Button>
-        <Button onClick={() => this.props.onSelectPage(PageType.PASS_DEPENDENCY)}>
+        <Button onClick={() => this.props.onSelectPage(PageType.PASS_DEPENDENCY)}
+          active={PageType.PASS_DEPENDENCY == this.props.selectedPage}>
           <Icon name='fork' size='big' title='show pass dependency graph'/>
         </Button>
       </div>

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { OptimizedMethod, Pass } from '../data';
-import { VictoryChart, VictoryStack, VictoryBar, VictoryAxis, VictoryTooltip, VictoryTheme } from 'victory';
+import { VictoryChart, VictoryAxis, VictoryTooltip, VictoryTheme, VictoryScatter, VictoryLabel } from 'victory';
 import { Segment, Header, Table } from 'semantic-ui-react';
 import SegmentGroup from 'semantic-ui-react/dist/commonjs/elements/Segment/SegmentGroup';
 
@@ -64,9 +64,14 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
             <VictoryChart height={400} width={400}
               theme={VictoryTheme.material}
               domainPadding={10}>
-                <VictoryStack>
-                  <VictoryBar data={chartData} labelComponent={<VictoryTooltip></VictoryTooltip>}/>
-                </VictoryStack>
+                <VictoryScatter data={chartData}
+                          bubbleProperty='y'
+                          minBubbleSize={3}
+                          maxBubbleSize={10}
+                          style={{ labels: { fill: 'black', fontSize: 12} }}
+                          labels={(d) => d.x}
+                          labelComponent={<VictoryTooltip></VictoryTooltip>}
+                        />
                 <VictoryAxis dependentAxis
                   tickFormat={(tick) => `${tick}%`}
                 />
