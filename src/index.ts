@@ -1,8 +1,8 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu, shell, dialog } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 import * as fs from 'fs';
-import {OptimizedMethod} from './data';
+import { OptimizedMethod } from './data';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -14,18 +14,99 @@ if (isDevMode) {
   enableLiveReload({strategy: 'react-hmr'});
 }
 
-const createWindow = async () => {
+let fileName: string = 'xyz.json';
 
-  let data = fs.readFileSync('xyz.json', 'utf8');
+function openFileDialog() {
+  dialog.showOpenDialog({ properties: [ 'openFile'], filters: [{ extensions: ['json'] }]}, (fileNames: string[]) => {
+      if (fileNames === undefined) {
+        return;
+      }
+      fileName = fileNames[0];
+      // mainWindow.close();
+      createWindow();
+  });
+}
+
+// initialize the menu
+const template = [
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open File',
+        accelerator: 'CmdOrCtrl+O',
+        click: () => openFileDialog()
+      },
+      {role: 'quit'},
+    ]
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      {role: 'undo'},
+      {role: 'redo'},
+      {type: 'separator'},
+      {role: 'cut'},
+      {role: 'copy'},
+      {role: 'paste'},
+      {role: 'pasteandmatchstyle'},
+      {role: 'delete'},
+      {role: 'selectall'}
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      {role: 'reload'},
+      {role: 'forcereload'},
+      {role: 'toggledevtools'},
+      {type: 'separator'},
+      {role: 'resetzoom'},
+      {role: 'zoomin'},
+      {role: 'zoomout'},
+      {type: 'separator'},
+      {role: 'togglefullscreen'}
+    ]
+  },
+  {
+    role: 'window',
+    submenu: [
+      {role: 'minimize'},
+      {role: 'close'}
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'CACAO JVM',
+        click () { shell.openExternal('https://cacaojvm.org'); }
+      },
+      {
+        label: 'CACAO Bitbucket Repository',
+        click () { shell.openExternal('https://bitbucket.org/cacaovm/'); }
+      }
+    ]
+  }
+];
+
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);
+
+function readFile(): OptimizedMethod {
+  let data = fs.readFileSync(fileName, 'utf8');
   let jsonData = JSON.parse(data);
   let optimizedMethod = new OptimizedMethod().fromJSON(jsonData);
+  return optimizedMethod;
+}
 
-  let title = 'visualize CACAO JVM: ' + optimizedMethod.class + '.' + optimizedMethod.method + '(' + optimizedMethod.desc + ')';
+const createWindow = async () => {
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    title: title
+    title: 'visualize CACAO JVM'
   });
 
   // and load the index.html of the app.
@@ -44,7 +125,7 @@ const createWindow = async () => {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-  mainWindow.optimizedMethod = optimizedMethod;
+  mainWindow.optimizedMethod = readFile();
 };
 
 // This method will be called when Electron has finished
