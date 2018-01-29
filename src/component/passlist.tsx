@@ -28,7 +28,7 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
 
   render() {
     return (
-      <div style={{height: '100%', overflow: 'scroll'}}>
+      <div>
         <Button.Group vertical>
         {this.props.passes.map( (pass, index) => this._createListEntry(this.state, pass, index))}
       </Button.Group>

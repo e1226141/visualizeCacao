@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { OptimizedMethod, Pass, GraphType }  from '../data';
+import { OptimizedMethod, Pass, GraphType } from '../data';
 import { ControlFlow } from './control_flow';
 import { DetailGraph } from './detail_graph';
 import { PassList } from './passlist';
 import { Button, Icon } from 'semantic-ui-react';
+import SplitterLayout from 'react-splitter-layout';
 
 export interface IHIRProps {
-    optimizedMethod: OptimizedMethod;
+  optimizedMethod: OptimizedMethod;
 }
 
 export interface IHIRState {
@@ -40,36 +41,40 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   }
 
   private _toggleShowBB = () => this.setState((prevState) => ({ ...prevState, showBB: !prevState.showBB }));
-  private _toggleShowPasses = () => this.setState((prevState) => ({...prevState, showPasses: !this.state.showPasses}));
+  private _toggleShowPasses = () => this.setState((prevState) => ({ ...prevState, showPasses: !this.state.showPasses }));
   private _toggleShowEdgeLabels = () => {
-    this.setState((prevState) => ({...prevState, showEdgeLabels: !this.state.showEdgeLabels}));
+    this.setState((prevState) => ({ ...prevState, showEdgeLabels: !this.state.showEdgeLabels }));
   }
 
   render() {
-    let gridTemplateColumns = this.state.showPasses ? '0.1fr 1fr 3fr 3fr' : '0.1fr 0fr 3fr 3fr';
-    const style = {
-        display: 'grid',
-        height: '100%',
-        gridTemplateColumns: gridTemplateColumns,
-    };
     let passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
-                graphType={GraphType.HIR} />
+        graphType={GraphType.HIR} />
       : <div></div>;
     return (
-        <div>
-          <div style={style}>
+      <div>
+        <SplitterLayout horizontal percentage primaryIndex={1} primaryInitialSize={90} secondaryInitialSize={10}>
+          <div>
             <div>
               <Button onClick={() => this._toggleShowPasses()} title='show/hide pass-list'><Icon name='list' size='big' /></Button>
             </div>
             {passList}
-            <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
-              onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
-              networkGraphStyle={{height: '1024px'}}/>            
-            <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.showAdjacentNodeDistance}
-                networkGraphStyle={{height: '1024px'}}/>
           </div>
-        </div>
+          <div>
+            <SplitterLayout horizontal primaryIndex={1} percentage primaryInitialSize={60}>
+              <div>
+                <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
+                  onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
+                  networkGraphStyle={{ height: '1024px' }} />
+              </div>
+              <div>
+                <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.showAdjacentNodeDistance}
+                  networkGraphStyle={{ height: '1024px' }} />
+              </div>
+            </SplitterLayout>
+          </div>
+        </SplitterLayout>
+      </div>
     );
   }
 }

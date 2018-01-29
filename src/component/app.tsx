@@ -4,6 +4,7 @@ import { OptimizedMethod, Graph, GraphType } from '../data';
 import { PassDependencyGraph } from './pass_dependency_graph';
 import { PassStatistics } from './pass_statistics';
 import { Navigation, PageType } from './navigation';
+import SplitterLayout from 'react-splitter-layout';
 
 export interface AppProps {
   optimizedMethod: OptimizedMethod;
@@ -46,17 +47,11 @@ export class App extends React.Component<AppProps, AppState> {
         break;
       default: content = (<div>unknown or unsupported page type: {this.state.pageType} </div>);
     }
-    let gridTemplateColumns = '0.1fr 10fr';
-    const style = {
-      display: 'grid',
-      height: '100%',
-      gridTemplateColumns: gridTemplateColumns,
-    };
     return (
-      <div style={style}>
-        <Navigation selectedPage={this.state.pageType} onSelectPage={this._onSelectPage.bind(this)}></Navigation>
-        {content}
-      </div>
+      <SplitterLayout horizontal primaryIndex={1} secondaryInitialSize={70}>
+        <div><Navigation selectedPage={this.state.pageType} onSelectPage={this._onSelectPage.bind(this)}></Navigation></div>
+        <div>{content}</div>
+      </SplitterLayout>
     );
   }
 

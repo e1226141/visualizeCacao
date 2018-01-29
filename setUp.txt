@@ -28,3 +28,6 @@ http://json2ts.com/
 Victory charting
 npm install victory --save
 npm install @types/victory --save
+
+Split Pane: https://www.npmjs.com/package/react-splitter-layout
+npm install react-splitter-layout --save
