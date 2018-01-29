@@ -29,6 +29,12 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this.createGraph();
   }
 
+  componentDidUpdate(prevProps: INetworkGraphProps, prevState: INetworkGraphState) {
+    // only update chart if the data has changed
+    this._network.stabilize(1000);
+    this._network.fit();
+  }
+
   createGraph() {
     let identifier = this.state.identifier || '';
     let container = document.getElementById(identifier);
@@ -51,7 +57,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
-    this._network.stabilize();
+    this._network.stabilize(1000);
     this._network.fit();
   }
 

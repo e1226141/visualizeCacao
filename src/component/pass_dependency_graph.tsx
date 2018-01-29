@@ -30,7 +30,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       height: '100%',
       width: '100%',
       nodes: {
-        shape: 'box',
+        shape: 'box'
       },
       edges: {
         arrows: {
@@ -38,33 +38,45 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
             'enabled': true
           }
         },
-        color: {
-          inherit: false
-        },
         smooth: {
-          enabled: false,
-          type: 'discrete'
-        },
-        chosen: false
+          enabled: true,
+          type: 'cubicBezier',
+          forceDirection: true
+        }
       },
       layout: {
-        improvedLayout: false,
+        improvedLayout: true,
         hierarchical: {
           enabled: true,
-          nodeSpacing: 425,
-          blockShifting: false,
-          edgeMinimization: false,
+          levelSeparation: 150,
+          nodeSpacing: 100,
+          treeSpacing: 200,
+          blockShifting: true,
+          edgeMinimization: true,
+          parentCentralization: true,
+          direction: 'UD',
           sortMethod: 'directed'
         }
       },
       physics: {
         enabled: false,
-        barnesHut: {
-          avoidOverlap: 1
+        hierarchicalRepulsion: {
+          centralGravity: 0,
+          nodeDistance: 250
         },
-        solver: 'barnesHut'
+        maxVelocity: 8,
+        minVelocity: 0.75,
+        solver: 'hierarchicalRepulsion'
       }
     };
+
+    // forceAtlas2Based: {
+    //   springLength: 150,
+    //   avoidOverlap: 1
+    // },
+    // minVelocity: 0.75,
+    // solver: 'forceAtlas2Based'
+
     return options as JSON;
   }
 
@@ -196,7 +208,7 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     }
     this.setHierarchy(root);
 
-    // adjust the level of nodes, which have parent nodes and therefore will be set to 
+    // adjust the level of nodes, which have parent nodes and therefore will be set to
     // level 0
     this.nodes.filter(node => node.level == 0).forEach(node => {
       const edges = this.displayEdgeMap.get(node.id);
