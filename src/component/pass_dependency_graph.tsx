@@ -207,23 +207,6 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
       return;
     }
     this.setHierarchy(root);
-
-    // adjust the level of nodes, which have parent nodes and therefore will be set to
-    // level 0
-    this.nodes.filter(node => node.level == 0).forEach(node => {
-      const edges = this.displayEdgeMap.get(node.id);
-      if (!edges || edges.length == 0) {
-          return;
-      }
-      const nodeToLevels = edges.map(e => {
-        const nodeTo = this.displayNodeMap.get(e.to);
-        if (nodeTo && nodeTo.level) {
-          return nodeTo.level - 1;
-        }
-        return node.level ? node.level - 1 : -1;
-      });
-      node.level = Math.min.apply(Math, nodeToLevels);
-    });
   }
 
  toJSONGraphLegend (): JSON {

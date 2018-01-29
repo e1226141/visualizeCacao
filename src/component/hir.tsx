@@ -65,9 +65,9 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
             {passList}
             <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
               onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
-              networkGraphStyle={{height: '1024px'}}/>
+              networkGraphStyle={{height: '1024px'}}/>            
             <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.showAdjacentNodeDistance}
-              networkGraphStyle={{height: '1024px'}}/>
+                networkGraphStyle={{height: '1024px'}}/>
           </div>
         </div>
     );

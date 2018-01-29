@@ -49,7 +49,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
         },
         smooth: {
           enabled: true,
-          type: 'discrete'
+          type: 'continuous'
         },
         chosen: false
       },
@@ -63,7 +63,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           edgeMinimization: true,
           parentCentralization: true,
           direction: 'UD',
-          sortMethod: 'hubsize'
+          sortMethod: 'directed'
         }
       },
       physics: {
@@ -199,16 +199,17 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   private showBB: boolean;
   private showEdgeLabels: boolean;
 
-  constructor(nodes: Node[], edges: Edge[], pShowBB: boolean, pShowEdgeLabels: boolean) {
+  constructor(cfgNodes: Node[], cfgEdges: Edge[], pShowBB: boolean, pShowEdgeLabels: boolean) {
     super();
     this.showBB = pShowBB;
     this.showEdgeLabels = pShowEdgeLabels;
-    this.init(nodes, edges);
+    this.init(cfgNodes, cfgEdges);
     if (this.showBB) {
       this.collapseToBB();
+      this.createLookupMaps(); // need to refresh the lookup maps
     }
     const root = this.findRoot();
-    this.markBackedges(root, new Set<number>());
+    this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
     this.edges.filter((e: DisplayEdge) => e.backedge).forEach((e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
     this.setHierarchy(root);
   }

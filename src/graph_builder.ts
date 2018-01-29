@@ -55,15 +55,15 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
     protected _displayEdgeMap: Map<number, Array<E>> = new Map();
     private maxLevel: number = 0;
 
-    init (nodes: Node[], edges: Edge[]): void {
+    init(nodes: Node[], edges: Edge[]): void {
         this.nodes = nodes.map((n) => this.toDisplayNode(n));
         this.edges = edges.map((e) => this.toDisplayEdge(e));
         this.createLookupMaps();
     }
 
-    protected abstract toDisplayNode (node: Node): N;
-    protected abstract toDisplayEdge (edge: Edge): E;
-    protected abstract toJSONGraphLegend (): JSON;
+    protected abstract toDisplayNode(node: Node): N;
+    protected abstract toDisplayEdge(edge: Edge): E;
+    protected abstract toJSONGraphLegend(): JSON;
 
     protected set nodes(values: N[]) {
         this._nodes = values;
@@ -91,6 +91,9 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
 
     // create node and edge lookups
     protected createLookupMaps(): void {
+        this.displayNodeMap.clear();
+        this.displayEdgeMap.clear();
+
         this.nodes.forEach((n) => { this.displayNodeMap.set(n.id, n); });
         this.edges.forEach((e) => {
             let edgeList = this.displayEdgeMap.get(e.from);
@@ -114,7 +117,7 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
         return this.nodes.find(node => node.root);
     }
 
-    protected markBackedges(node: N | undefined, visitedNodes: Set<number>) {
+    protected markBackedges(node: N | undefined, ignoredEdges: (edge: DisplayEdge) => boolean,  visitedNodes: Set<number>) {
         if (node == undefined) {
             return;
         }
@@ -124,27 +127,47 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
         }
         visitedNodes.add(node.id);
         edges
-            .filter(e => e.type !== 'op')
+            .filter(ignoredEdges)
+            .filter(e => e.backedge != true)
             .forEach(edge => {
                 const childId = edge.to;
                 if (visitedNodes.has(childId)) {
                     edge.backedge = true;
+                    // console.log('mark backedge: ' + edge.from + ' - ' + edge.to + ':' + edge.type);
                 } else {
                     const childNode = this.displayNodeMap.get(edge.to);
-                    this.markBackedges(childNode, visitedNodes);
+                    this.markBackedges(childNode, ignoredEdges, visitedNodes);
                 }
-                visitedNodes.delete(node.id);
             });
+        visitedNodes.delete(node.id);
     }
 
     protected setHierarchy = (root: N | undefined): void => {
         this.maxLevel = 0;
-        this.setHierarchyDfs(root, 0);
-        // set all unreachable nodes to default level
-        this.nodes.filter(n => n.level == undefined).forEach(n => { n.level = 0; });
+        this.setHierarchyDfs(root, 0, new Set<number>());
+
+        // adjust the level of nodes, which have parent nodes and therefore will be set to
+        // level 0
+        this.nodes.filter(node => node.level == undefined).forEach(node => {
+            const edges = this.displayEdgeMap.get(node.id);
+            if (!edges || edges.length == 0) {
+                return this.maxLevel;
+            }
+            const nodeToLevels = edges.map(e => {
+                const nodeTo = this.displayNodeMap.get(e.to);
+                if (nodeTo && nodeTo.level) {
+                    return nodeTo.level - 1;
+                }
+                return node.level ? node.level - 1 : -1;
+            });
+            node.level = Math.min.apply(Math, nodeToLevels);
+        });
+        this.nodes.filter(node => node.level == undefined).forEach(node => {
+            node.level = this.maxLevel;
+        });
     }
 
-    private setHierarchyDfs = (node: N | undefined, level: number): void => {
+    private setHierarchyDfs = (node: N | undefined, level: number, visitedNodes: Set<number>): void => {
         if (node == undefined || level > this._nodes.length) {
             return;
         }
@@ -152,24 +175,26 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
             this.maxLevel = level;
         }
 
+        visitedNodes.add(node.id);
         if (node.level == undefined || level > node.level) {
-            console.log('change node.level to ' + level + ' from ' + node.level + ' for id: ' + node.id + ' and type ' + node.name);
+            // console.log('change node.level to ' + level + ' from ' + node.level + ' for id: ' + node.id + ' and type ' + node.label);
             node.level = level;
             const edges = this.displayEdgeMap.get(node.id);
             if (edges) {
                 edges.forEach(e => {
-                    // with backedges this would lead to an endless loop
-                    if (e.backedge == true) {
+                    // avoid cycles
+                    if (visitedNodes.has(e.to)) {
                         return;
                     }
                     const childNode = this.displayNodeMap.get(e.to);
-                    this.setHierarchyDfs(childNode, level + 1);
+                    this.setHierarchyDfs(childNode, level + 1, visitedNodes);
                 });
             }
         }
+        visitedNodes.delete(node.id);
     }
 
-    protected getNodeBackgroundColor (nodeType: NodeType): string {
+    protected getNodeBackgroundColor(nodeType: NodeType): string {
         switch (nodeType) {
             case NodeType.IFInst:
                 return '#A1EC76';

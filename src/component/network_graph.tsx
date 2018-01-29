@@ -29,11 +29,11 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this.createGraph();
   }
 
-  componentDidUpdate(prevProps: INetworkGraphProps, prevState: INetworkGraphState) {
-    // only update chart if the data has changed
-    this._network.stabilize(1000);
-    this._network.fit();
-  }
+  //componentDidUpdate(prevProps: INetworkGraphProps, prevState: INetworkGraphState) {
+  // // only update chart if the data has changed
+  //  this._network.stabilize(1000);
+  //  this._network.fit();
+  //}
 
   createGraph() {
     let identifier = this.state.identifier || '';

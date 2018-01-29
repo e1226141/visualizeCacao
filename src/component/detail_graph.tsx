@@ -198,7 +198,7 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     this.init(nodes, edges);
 
     const root = this.findRoot();
-    this.markBackedges(root, new Set<number>());
+    this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
     this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
     this.setHierarchy(root);
   }
