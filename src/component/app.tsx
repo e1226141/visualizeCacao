@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { HIR } from './hir';
-import { OptimizedMethod, Graph, GraphType } from '../data';
+import { OptimizedMethod, Graph, GraphType, LIR, MachineInstruction } from '../data';
 import { PassDependencyGraph } from './pass_dependency_graph';
 import { PassStatistics } from './pass_statistics';
 import { Navigation, PageType } from './navigation';
 import SplitterLayout from 'react-splitter-layout';
+import { List } from 'semantic-ui-react';
 
 export interface AppProps {
   optimizedMethod: OptimizedMethod;
@@ -39,7 +40,7 @@ export class App extends React.Component<AppProps, AppState> {
         content = <HIR optimizedMethod={this.props.optimizedMethod} />;
         break;
       case PageType.LIR:
-        content = <div>not yet implemented</div>;
+        content = this.renderLIR();
         break;
       case PageType.PASS_DEPENDENCY:
         content = <PassDependencyGraph networkGraphStyle={{ height: '1024px' }}
@@ -53,6 +54,15 @@ export class App extends React.Component<AppProps, AppState> {
         <div>{content}</div>
       </SplitterLayout>
     );
+  }
+
+  private renderLIR() {
+    const lir = this.props.optimizedMethod.passes[19].lir;
+    if (!lir) {
+      return <div></div>;
+    }
+    return <List items={lir.instructions.map(instruction => instruction.id + ': '
+      + instruction.name + ' ' + instruction.operands + ' -> ' + instruction.result)} />
   }
 
   private _onSelectPage(newPageType: PageType): void {

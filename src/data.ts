@@ -4,8 +4,7 @@
 export enum GraphType {
   Unknown,      // artificial value when name can't be mapped
   PassDependencyGraph,
-  HIR,
-  LIR
+  HIR
 }
 
 /**
@@ -133,10 +132,40 @@ export class Graph implements Serializable<Graph> {
   }
 }
 
+export class MachineInstruction implements  Serializable<MachineInstruction> {
+  id: number;
+  name: string;
+  type: string;
+  BB: number;
+  result: string;
+  operands: string[];
+  successors: string[];
+
+  fromJSON(input: any) {
+    this.id = input.id;
+    this.name = input.name;
+    this.type = input.type;
+    this.BB = input.BB;
+    this.result = input.result;
+    this.operands = input.operands;
+    this.successors = input.successors;
+    return this;
+  }
+}
+
+export class LIR implements Serializable<LIR> {
+  instructions: MachineInstruction[];
+  fromJSON(input: any) {
+    this.instructions = input.instructions.map((instruction: any) => new MachineInstruction().fromJSON(instruction));
+    return this;
+  }
+}
+
 export class Pass implements Serializable<Pass> {
     name: string;
     time: number;
     graphs: Graph[];
+    lir?: LIR;
 
     getGraph(graphType: GraphType): Graph | undefined {
       if (this.graphs) {
@@ -149,6 +178,9 @@ export class Pass implements Serializable<Pass> {
       this.name = input.name;
       this.time = input.time;
       this.graphs = input.graph.map((graph: any) => new Graph().fromJSON(graph));
+      if (input.LIR) {
+        this.lir = new LIR().fromJSON(input.LIR);
+      }
       return this;
     }
 }
