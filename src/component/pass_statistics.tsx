@@ -152,6 +152,7 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
       case 'L': return 'long';
       case 'S': return 'short';
       case 'Z': return 'boolean';
+      case 'V': return 'void';
     }
     if (typeString.startsWith('L')) {
       return typeString.substring(1);
