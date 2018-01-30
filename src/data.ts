@@ -103,7 +103,6 @@ export class Edge implements Serializable<Edge> {
       } else {
         this.edgeType = edgeTypeAssignment;
       }
-
       return this;
     }
 
@@ -136,7 +135,7 @@ export class MachineInstruction implements  Serializable<MachineInstruction> {
   id: number;
   name: string;
   type: string;
-  BB: number;
+  BB: string;
   result: string;
   operands: string[];
   successors: string[];

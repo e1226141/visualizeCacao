@@ -22,7 +22,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   constructor(props: IHIRProps) {
     super(props);
     this.state = {
-      selectedPass: props.optimizedMethod.passes[0],
+      selectedPass: props.optimizedMethod.passes.filter(p => p.getGraph(GraphType.HIR) != null)[0],
       showBB: true,
       showPasses: true,
       showEdgeLabels: true,
@@ -49,7 +49,10 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   render() {
     let passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
-        graphType={GraphType.HIR} />
+        showPass={ (pass: Pass) => {
+          const graph = pass.getGraph(GraphType.HIR);
+          return graph != null && graph.nodes != null && graph.nodes.length > 0;
+        }} />
       : <div></div>;
     return (
       <div>

@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { Pass, GraphType }  from '../data';
+import { Pass }  from '../data';
 import { Button } from 'semantic-ui-react';
 
 export interface IPassListProps {
   passes: Pass[];
   handleClick: (pass: Pass) => void;
   ignorePrinterPasses: boolean;
-  graphType: GraphType;
+  showPass: (pass: Pass) => boolean;
 }
 
 export interface IPassListState {
@@ -46,16 +46,14 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
 
   private _createListEntry(state: IPassListState, pass: Pass, index: number): any  {
 
-    const active = state.activeIndex === index;
-    const graph = pass.getGraph(this.props.graphType);
-    if (!graph || !graph.nodes || graph.nodes.length == 0) {
+    if (!this.props.showPass(pass)) {
       return;
     }
     const name = this._getPassDisplayName(pass.name);
     if (this.props.ignorePrinterPasses && name.endsWith('Printer')) {
       return;
     }
-
+    const active = state.activeIndex === index;
     return (
       <Button
         key={ name + index}
@@ -69,5 +67,4 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
       </Button>
     );
   }
-
 }
