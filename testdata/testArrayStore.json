@@ -1,0 +1,703 @@
+{ 
+	"class": "org/cacaojvm/compiler2/test/ArrayStore",
+	"method": "testArrayStore",
+	"desc": "([JIJ)V",
+	"graph": [
+		{
+		"type": "PassDependencyGraph",
+		"nodes": [
+			{"id": 139730188091497, "name": "GlobalSchedulePrinterPass(early)"}, 
+			{"id": 139730188091498, "name": "GlobalSchedulePrinterPass(late)"}, 
+			{"id": 139730188084448, "name": "DeadCodeEliminationPass"}, 
+			{"id": 139730188090560, "name": "RegisterAllocatorPass"}, 
+			{"id": 139730188088680, "name": "MachineInstructionPrinterPass"}, 
+			{"id": 139730188092912, "name": "ScheduleLatePass"}, 
+			{"id": 139730188084640, "name": "DisassemblerPass"}, 
+			{"id": 139730188083280, "name": "CFGMetaPass"}, 
+			{"id": 139730188086288, "name": "InstructionMetaPass"}, 
+			{"id": 139730188091272, "name": "BasicBlockPrinterPass"}, 
+			{"id": 139730188088360, "name": "LoopTreePrinterPass"}, 
+			{"id": 139730188083520, "name": "CodeGenPass"}, 
+			{"id": 139730188086528, "name": "LinearScanAllocatorPass"}, 
+			{"id": 139730188088080, "name": "LoopPass"}, 
+			{"id": 139730188092688, "name": "ScheduleEarlyPass"}, 
+			{"id": 139730188087520, "name": "LivetimeAnalysisPass"}, 
+			{"id": 139730188083056, "name": "CFGConstructionPass"}, 
+			{"id": 139730188086064, "name": "ICMDPrinterPass"}, 
+			{"id": 139730188085456, "name": "ExamplePass"}, 
+			{"id": 139730188090816, "name": "SSAConstructionPass"}, 
+			{"id": 139730188092464, "name": "ScheduleClickPass"}, 
+			{"id": 139730188091336, "name": "SSAPrinterPass"}, 
+			{"id": 139730188089456, "name": "MachineLoopPass"}, 
+			{"id": 139730188085696, "name": "GlobalValueNumberingPass"}, 
+			{"id": 139730188093360, "name": "VerifierPass"}, 
+			{"id": 139730188085232, "name": "DominatorPass"}, 
+			{"id": 139730188089040, "name": "MachineInstructionSchedulingPass"}, 
+			{"id": 139730188085000, "name": "DomTreePrinterPass"}, 
+			{"id": 139730188084064, "name": "ConstantPropagationPass"}, 
+			{"id": 139730188093136, "name": "StackAnalysisPass"}, 
+			{"id": 139730188090128, "name": "ParserPass"}, 
+			{"id": 139730188082704, "name": "BasicBlockSchedulingPass"}, 
+			{"id": 139730188089896, "name": "ObjectFileWriterPass"}, 
+			{"id": 139730188091496, "name": "GlobalSchedulePrinterPass(click)"}],
+
+		"edges": [
+			{"from": 139730188091497, "to": 139730188092688, "type": "requires"}, 
+			{"from": 139730188091498, "to": 139730188092912, "type": "requires"}, 
+			{"from": 139730188084448, "to": 139730188086288, "type": "requires"}, 
+			{"from": 139730188084448, "to": 139730188092688, "type": "run-before"}, 
+			{"from": 139730188084448, "to": 139730188091336, "type": "run-before"}, 
+			{"from": 139730188090560, "to": 139730188086528, "type": "requires"}, 
+			{"from": 139730188088680, "to": 139730188089040, "type": "requires"}, 
+			{"from": 139730188088680, "to": 139730188083520, "type": "schedule-before"}, 
+			{"from": 139730188088680, "to": 139730188086528, "type": "schedule-before"}, 
+			{"from": 139730188092912, "to": 139730188092688, "type": "requires"}, 
+			{"from": 139730188092912, "to": 139730188088080, "type": "requires"}, 
+			{"from": 139730188092912, "to": 139730188085232, "type": "requires"}, 
+			{"from": 139730188084640, "to": 139730188083520, "type": "requires"}, 
+			{"from": 139730188083280, "to": 139730188090816, "type": "requires"}, 
+			{"from": 139730188086288, "to": 139730188083280, "type": "requires"}, 
+			{"from": 139730188091272, "to": 139730188090816, "type": "requires"}, 
+			{"from": 139730188088360, "to": 139730188088080, "type": "requires"}, 
+			{"from": 139730188083520, "to": 139730188090560, "type": "requires"}, 
+			{"from": 139730188083520, "to": 139730188089040, "type": "requires"}, 
+			{"from": 139730188086528, "to": 139730188087520, "type": "requires"}, 
+			{"from": 139730188086528, "to": 139730188089040, "type": "requires"}, 
+			{"from": 139730188086528, "to": 139730188089040, "type": "modifies"}, 
+			{"from": 139730188086528, "to": 139730188087520, "type": "destroys"}, 
+			{"from": 139730188088080, "to": 139730188083280, "type": "requires"}, 
+			{"from": 139730188092688, "to": 139730188086288, "type": "requires"}, 
+			{"from": 139730188092688, "to": 139730188085232, "type": "requires"}, 
+			{"from": 139730188087520, "to": 139730188089456, "type": "requires"}, 
+			{"from": 139730188087520, "to": 139730188089040, "type": "requires"}, 
+			{"from": 139730188083056, "to": 139730188093360, "type": "requires"}, 
+			{"from": 139730188086064, "to": 139730188083056, "type": "requires"}, 
+			{"from": 139730188085456, "to": 139730188086288, "type": "requires"}, 
+			{"from": 139730188090816, "to": 139730188083056, "type": "requires"}, 
+			{"from": 139730188092464, "to": 139730188092912, "type": "requires"}, 
+			{"from": 139730188091336, "to": 139730188090816, "type": "requires"}, 
+			{"from": 139730188089456, "to": 139730188089040, "type": "requires"}, 
+			{"from": 139730188085696, "to": 139730188086288, "type": "requires"}, 
+			{"from": 139730188085696, "to": 139730188084448, "type": "run-before"}, 
+			{"from": 139730188093360, "to": 139730188093136, "type": "requires"}, 
+			{"from": 139730188085232, "to": 139730188083280, "type": "requires"}, 
+			{"from": 139730188089040, "to": 139730188092464, "type": "requires"}, 
+			{"from": 139730188089040, "to": 139730188084064, "type": "requires"}, 
+			{"from": 139730188089040, "to": 139730188082704, "type": "requires"}, 
+			{"from": 139730188085000, "to": 139730188085232, "type": "requires"}, 
+			{"from": 139730188084064, "to": 139730188086288, "type": "requires"}, 
+			{"from": 139730188084064, "to": 139730188084448, "type": "run-before"}, 
+			{"from": 139730188084064, "to": 139730188085696, "type": "run-before"}, 
+			{"from": 139730188093136, "to": 139730188090128, "type": "requires"}, 
+			{"from": 139730188082704, "to": 139730188088080, "type": "requires"}, 
+			{"from": 139730188089896, "to": 139730188083520, "type": "requires"}, 
+			{"from": 139730188091496, "to": 139730188092464, "type": "requires"}]
+
+		}],
+	"passes": [
+		{
+		"name": "ParserPass", 
+		"time":3, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [],
+			"edges": []
+			}]
+		}, 
+		{
+		"name": "StackAnalysisPass", 
+		"time":2, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [],
+			"edges": []
+			}]
+		}, 
+		{
+		"name": "VerifierPass", 
+		"time":2, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [],
+			"edges": []
+			}]
+		}, 
+		{
+		"name": "CFGConstructionPass", 
+		"time":1, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [],
+			"edges": []
+			}]
+		}, 
+		{
+		"name": "SSAConstructionPass", 
+		"time":8, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "CFGMetaPass", 
+		"time":1, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "LoopPass", 
+		"time":4, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "LoopTreePrinterPass", 
+		"time":97, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "DominatorPass", 
+		"time":2, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "DomTreePrinterPass", 
+		"time":122, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "InstructionMetaPass", 
+		"time":1, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "ConstantPropagationPass", 
+		"time":3, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "GlobalValueNumberingPass", 
+		"time":27, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "DeadCodeEliminationPass", 
+		"time":5, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "SSAPrinterPass", 
+		"time":101, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "ScheduleEarlyPass", 
+		"time":5, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "BB": 0, "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "BB": 0, "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "ScheduleLatePass", 
+		"time":7, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "BB": 0, "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "BB": 0, "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "ScheduleClickPass", 
+		"time":3, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "BB": 0, "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "BB": 0, "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "BasicBlockSchedulingPass", 
+		"time":5, 
+		"graph": [
+			{
+			"type": "HIR",
+			"nodes": [
+				{"id": 1, "name": "LOADInst", "type": "ReferenceTypeID", "BB": 0}, 
+				{"id": 2, "name": "LOADInst", "type": "IntTypeID", "BB": 0}, 
+				{"id": 3, "name": "LOADInst", "type": "LongTypeID", "BB": 0}, 
+				{"id": 0, "name": "BeginInst", "type": "VoidTypeID", "root": true, "BB": 0}, 
+				{"id": 4, "name": "AREFInst", "type": "LongTypeID", "operands": [1, 2]}, 
+				{"id": 5, "name": "ASTOREInst", "type": "VoidTypeID", "BB": 0, "sideEffects": true, "operands": [4, 3]}, 
+				{"id": 6, "name": "ARRAYBOUNDSCHECKInst", "type": "VoidTypeID", "operands": [1, 2]}, 
+				{"id": 7, "name": "RETURNInst", "type": "VoidTypeID", "BB": 0}],
+			"edges": [
+				{"from": 0, "to": 7, "type": "bb"}, 
+				{"from": 1, "to": 4, "type": "op"}, 
+				{"from": 2, "to": 4, "type": "op"}, 
+				{"from": 6, "to": 4, "type": "sched"}, 
+				{"from": 4, "to": 5, "type": "op"}, 
+				{"from": 3, "to": 5, "type": "op"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 0, "to": 5, "type": "sched"}, 
+				{"from": 1, "to": 6, "type": "op"}, 
+				{"from": 2, "to": 6, "type": "op"}]
+			}]
+		}, 
+		{
+		"name": "MachineInstructionSchedulingPass", 
+		"time":22, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "vreg36"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "vreg37"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "vreg38"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(vreg37,,1)"], "result": "vreg39"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["vreg38", "vreg39"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["vreg38"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["vreg36"], "result": "24(vreg37,vreg38,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "MachineInstructionPrinterPass", 
+		"time":1, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "vreg36"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "vreg37"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "vreg38"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(vreg37,,1)"], "result": "vreg39"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["vreg38", "vreg39"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["vreg38"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["vreg36"], "result": "24(vreg37,vreg38,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "MachineLoopPass", 
+		"time":4, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "vreg36"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "vreg37"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "vreg38"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(vreg37,,1)"], "result": "vreg39"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["vreg38", "vreg39"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["vreg38"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["vreg36"], "result": "24(vreg37,vreg38,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "LivetimeAnalysisPass", 
+		"time":10, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "vreg36"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "vreg37"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "vreg38"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(vreg37,,1)"], "result": "vreg39"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["vreg38", "vreg39"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["vreg38"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["vreg36"], "result": "24(vreg37,vreg38,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "LinearScanAllocatorPass", 
+		"time":24, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "RDX"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "RDI"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "RSI"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(RDI,,1)"], "result": "RAX"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["RSI", "RAX"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["RSI"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "24(RDI,RSI,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "RegisterAllocatorPass", 
+		"time":1, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "RDX"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "RDI"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "RSI"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(RDI,,1)"], "result": "RAX"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["RSI", "RAX"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["RSI"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "24(RDI,RSI,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "MachineInstructionPrinterPass", 
+		"time":2, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "RDX"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "RDI"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "RSI"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(RDI,,1)"], "result": "RAX"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["RSI", "RAX"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["RSI"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "24(RDI,RSI,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}, 
+		{
+		"name": "CodeGenPass", 
+		"time":8, 
+		"graph": [],
+		"LIR": {
+			"instructions": [
+				{"id": 99, "name": "MLabel", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 100, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "RDX"},
+				{"id": 101, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDI"], "result": "RDI"},
+				{"id": 102, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RSI"], "result": "RSI"},
+				{"id": 103, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["16(RDI,,1)"], "result": "RAX"},
+				{"id": 104, "name": "X86_64CmpInst", "BB": "MBB:0009", "operands": ["RSI", "RAX"], "result": ""},
+				{"id": 105, "name": "X86_64CondTrapInst", "BB": "MBB:0009", "operands": ["RSI"], "result": ""},
+				{"id": 106, "name": "X86_64MovInst", "BB": "MBB:0009", "operands": ["RDX"], "result": "24(RDI,RSI,8)"},
+				{"id": 107, "name": "X86_64LeaveInst", "BB": "MBB:0009", "operands": [], "result": ""},
+				{"id": 108, "name": "X86_64RetInst", "BB": "MBB:0009", "operands": [], "result": ""}]
+			}
+		}
+	]
+}

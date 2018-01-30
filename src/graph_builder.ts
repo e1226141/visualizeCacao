@@ -212,13 +212,11 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
     protected getEdgeColor(edge: Edge): string {
         switch (edge.edgeType) {
             case EdgeType.cfg:
-                if (edge.trueBranch) {
-                    // the branches of an 'if' statement get different colors
-                    if (edge.trueBranch) {
-                        return '#5aa52b';
-                    } else {
-                        return '#7C29F0';
-                    }
+                // the branches of an 'if' statement get different colors
+                if (edge.trueBranch == true) {
+                    return '#5aa52b';
+                } if (edge.trueBranch == false) {
+                    return '#7C29F0';
                 }
                 // otherwise normal control flow
                 return '#87B2EC';

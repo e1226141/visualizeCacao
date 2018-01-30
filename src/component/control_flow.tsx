@@ -236,7 +236,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
 
   protected toDisplayNode (node: Node): DisplayNode {
     return new DisplayNode(node,
-      this.getNodeDisplayString(node, true),
+      this.getNodeDisplayString(node, false),
       this.getNodeBackgroundColor(node.nodeType)
     );
   }

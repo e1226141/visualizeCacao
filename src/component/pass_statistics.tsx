@@ -149,7 +149,7 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
       case 'D': return 'double';
       case 'F': return 'float';
       case 'I': return 'int';
-      case 'L': return 'long';
+      case 'J': return 'long';
       case 'S': return 'short';
       case 'Z': return 'boolean';
       case 'V': return 'void';
