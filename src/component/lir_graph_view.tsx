@@ -83,19 +83,19 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
     };
 
     let lirSearchValueSelected = (selection: any) => {
-      console.log('selected: ' + selection.id);
+      // console.log('selected: ' + selection.id);
       const id = selection.id;
       this._lirNetwork.selectNodes([id]);
       this._lirNetwork.focus(id, { scale: 1.0 });
     };
 
     return (
-      <div>
+      <div style={{borderAll: 0, margin: 0}}>
         <Segment.Group horizontal raised style={{ padding: 0, margin: 0 }}>
-          <Segment floated='left'>
+          <Segment floated='left' attached={true}>
             <NodeSearch graph={graph} valueSelectedHandler={lirSearchValueSelected} style={{ paddingRight: '20px', width: '100%' }} />
           </Segment>
-          <Segment floated='right' compact size='mini'>
+          <Segment floated='right' compact size='mini' attached={true}>
             <Popup trigger={
               <Statistic size='mini' floated='right'>
                 <Statistic.Value>{LIR.instructions.length}</Statistic.Value>
@@ -129,7 +129,7 @@ class MachineBasicBlock {
       return [];
     }
     const lastInstruction = this.instructions[this.instructions.length - 1];
-    console.log(this.id + ': successors: ' + lastInstruction.successors);
+    // console.log(this.id + ': successors: ' + lastInstruction.successors);
     if (lastInstruction.successors) {
       return lastInstruction.successors.map(successor => this.removeMBBFromString(successor));
     }

@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { OptimizedMethod, Pass } from '../data';
 import { PassList } from './passlist';
-import { List } from 'semantic-ui-react';
 import { Button, Icon } from 'semantic-ui-react';
 import { LirGraphView } from './lir_graph_view';
+import { LirListView } from './lir_list_view';
+import { Tab } from 'semantic-ui-react';
 import SplitterLayout from 'react-splitter-layout';
 
 export interface ILIRViewProps {
@@ -25,12 +26,16 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
   }
 
   render() {
-    let lir = this.state.selectedPass.lir;
-    /*let lirView;
-    if (lir != null) {
-      lirView = <List items={lir.instructions.map(instruction => instruction.id + ': '
-        + instruction.name + ' ' + instruction.operands + ' -> ' + instruction.result)} />;
-    }*/
+    const tabpanes = [
+      { menuItem: 'Graph', render: () =>
+        <Tab.Pane attached={true}>
+          <LirGraphView pass={this.state.selectedPass} networkGraphStyle={{ height: '1024px' }}/>
+        </Tab.Pane> },
+      { menuItem: 'List', render: () =>
+        <Tab.Pane attached={true}>
+          <LirListView pass={this.state.selectedPass} />
+        </Tab.Pane> },
+    ];
 
     let passList = this.state.showPasses
     ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
@@ -38,16 +43,14 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
     : <div></div>;
     return (
       <div>
-        <SplitterLayout horizontal percentage primaryIndex={1} primaryInitialSize={90} secondaryInitialSize={10}>
+        <SplitterLayout horizontal primaryIndex={1} secondaryInitialSize={220}>
           <div>
             <div>
               <Button onClick={() => this._toggleShowPasses()} title='show/hide pass-list'><Icon name='list' size='big' /></Button>
             </div>
             {passList}
           </div>
-          <div>
-            <LirGraphView pass={this.state.selectedPass} networkGraphStyle={{ height: '1024px' }}/>
-          </div>
+          <Tab menu={{borderless: true, attached: true, secondary: false, pointing: false }} panes={tabpanes} />
         </SplitterLayout>
       </div>
     );
