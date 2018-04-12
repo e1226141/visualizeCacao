@@ -45,38 +45,21 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
         }
       },
       layout: {
-        improvedLayout: true,
         hierarchical: {
           enabled: true,
-          levelSeparation: 150,
-          nodeSpacing: 100,
-          treeSpacing: 200,
-          blockShifting: true,
-          edgeMinimization: true,
-          parentCentralization: true,
-          direction: 'UD',
-          sortMethod: 'directed'
+          levelSeparation: 150
         }
       },
       physics: {
-        enabled: false,
         hierarchicalRepulsion: {
-          centralGravity: 0,
           nodeDistance: 250
         },
-        maxVelocity: 8,
-        minVelocity: 0.75,
-        solver: 'hierarchicalRepulsion'
+        stabilization: {
+          enabled: true,
+          iterations: 100
+        }
       }
     };
-
-    // forceAtlas2Based: {
-    //   springLength: 150,
-    //   avoidOverlap: 1
-    // },
-    // minVelocity: 0.75,
-    // solver: 'forceAtlas2Based'
-
     return options as JSON;
   }
 
@@ -206,7 +189,7 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     if (!root) {
       return;
     }
-    this.setHierarchy(root);
+    this.setHierarchy(root, () => true);
   }
 
  toJSONGraphLegend (): JSON {

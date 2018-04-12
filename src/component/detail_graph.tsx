@@ -30,6 +30,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
 
   private _getDefaultOptions(): JSON {
     let options: any = {
+      autoResize: true,
       height: '100%',
       width: '100%',
       nodes: {
@@ -54,18 +55,29 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
         improvedLayout: true,
         hierarchical: {
           enabled: true,
-          levelSeparation: 80,
-          nodeSpacing: 180,
+          levelSeparation: 160,
+          nodeSpacing: 520,
           blockShifting: true,
-          edgeMinimization: true,
+          edgeMinimization: false,
           parentCentralization: true,
           direction: 'UD',
-          sortMethod: 'hubsize'
+          sortMethod: 'directed'
         }
       },
       physics: {
-        enabled: false
-      }
+        enabled: false,
+        hierarchicalRepulsion: {
+            centralGravity: 0.10,
+            springLength: 25,
+            springConstant: 0.02,
+            nodeDistance: 220,
+            damping: 0.03
+        },
+        stabilization: {
+            enabled: true,
+            iterations: 100
+        }
+    }
     };
     return options as JSON;
   }
@@ -111,6 +123,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
       this.state.selectedNode,
       this.props.showAdjacentNodeDistance
     );
+
     const graph: JSON = graphBuilder.toJSONGraph();
     const legend: JSON = graphBuilder.toJSONGraphLegend();
     const options: JSON = this._getDefaultOptions();
@@ -200,7 +213,7 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     const root = this.findRoot();
     this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
     this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
-    this.setHierarchy(root);
+    this.setHierarchy(root, (e) => e.edgeType == EdgeType.cfg || e.edgeType == EdgeType.sched || e.edgeType == EdgeType.bb);
   }
 
  toJSONGraphLegend (): JSON {

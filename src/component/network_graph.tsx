@@ -57,8 +57,10 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
-    this._network.stabilize(1000);
     this._network.fit();
+    this._network.on('stabilizationIterationsDone', () => {
+      this._network.setOptions( { physics: false } );
+    });
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {
@@ -80,6 +82,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       if (changedEdges && nextProps.graph.edges && this._edges) {
         this._edges.add(nextProps.graph.edges);
       }
+      this._network.stabilize();
     }
     return false;
   }

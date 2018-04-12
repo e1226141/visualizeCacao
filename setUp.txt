@@ -10,7 +10,7 @@ npm install react-semantic-ui --save
 npm install semantic-ui-css --save
 npm install react-autosuggest --save
 npm install @types/react-autosuggest --save -d
-
+npm install uuid --save
 
 
 Links:

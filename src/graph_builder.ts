@@ -38,6 +38,7 @@ export class DisplayEdge {
     width?: number;
     backedge?: boolean;
     dashes?: boolean;
+    hidden?: boolean;
 
     constructor(pEdge: Edge, pLabel: string, pColor?: string, pWidth?: number, pDashes?: boolean) {
         Object.assign(this, pEdge); // copy all attributes with same name
@@ -142,32 +143,43 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
         visitedNodes.delete(node.id);
     }
 
-    protected setHierarchy = (root: N | undefined): void => {
+    protected setHierarchy = (root: N | undefined, edgeFilter: (edge: DisplayEdge) => boolean): void => {
         this.maxLevel = 0;
-        this.setHierarchyDfs(root, 0, new Set<number>());
+        this.setHierarchyDfs(root, 0, new Set<number>(), edgeFilter);
 
-        // adjust the level of nodes, which have parent nodes and therefore will be set to
+        // adjust the level of nodes, which have no parent nodes and therefore will be set to
         // level 0
-        this.nodes.filter(node => node.level == undefined).forEach(node => {
-            const edges = this.displayEdgeMap.get(node.id);
-            if (!edges || edges.length == 0) {
-                return this.maxLevel;
-            }
-            const nodeToLevels = edges.map(e => {
-                const nodeTo = this.displayNodeMap.get(e.to);
-                if (nodeTo && nodeTo.level) {
-                    return nodeTo.level - 1;
+        let nodesWithoutLevel = this.nodes.filter(node => node.level == undefined);
+        while (nodesWithoutLevel.length > 0) {
+            let nodeWithoutLevelCount = nodesWithoutLevel.length;
+            nodesWithoutLevel.forEach(node => {
+                const edges = this.displayEdgeMap.get(node.id);
+                if (!edges || edges.length == 0) {
+                    return;
                 }
-                return node.level ? node.level - 1 : -1;
+
+                let min = Number.MAX_SAFE_INTEGER;
+                for (let e of edges) {
+                    const nodeTo = this.displayNodeMap.get(e.to);
+                    if (nodeTo && nodeTo.level && nodeTo.level != -1 && min > nodeTo.level ) {
+                        min = nodeTo.level - 1;
+                    }
+                }
+                if (min < Number.MAX_SAFE_INTEGER) {
+                    node.level = min;
+                }
             });
-            node.level = Math.min.apply(Math, nodeToLevels);
-        });
+            nodesWithoutLevel = nodesWithoutLevel.filter(node => node.level == undefined);
+            if (nodesWithoutLevel.length == nodeWithoutLevelCount) {
+                break;
+            }
+        }
         this.nodes.filter(node => node.level == undefined).forEach(node => {
             node.level = this.maxLevel;
         });
     }
 
-    private setHierarchyDfs = (node: N | undefined, level: number, visitedNodes: Set<number>): void => {
+    private setHierarchyDfs = (node: N | undefined, level: number, visitedNodes: Set<number>, edgeFilter: (edge: DisplayEdge) => boolean): void => {
         if (node == undefined || level > this._nodes.length) {
             return;
         }
@@ -181,13 +193,13 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
             node.level = level;
             const edges = this.displayEdgeMap.get(node.id);
             if (edges) {
-                edges.forEach(e => {
+                edges.filter(edgeFilter).forEach(e => {
                     // avoid cycles
                     if (visitedNodes.has(e.to)) {
                         return;
                     }
                     const childNode = this.displayNodeMap.get(e.to);
-                    this.setHierarchyDfs(childNode, level + 1, visitedNodes);
+                    this.setHierarchyDfs(childNode, level + 1, visitedNodes, edgeFilter);
                 });
             }
         }
@@ -221,7 +233,7 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
                 // otherwise normal control flow
                 return '#87B2EC';
             case EdgeType.op:
-                return '#AD85E4';
+                return '#808080';
             case EdgeType.sched:
                 return '#FDBFC9';
             default:

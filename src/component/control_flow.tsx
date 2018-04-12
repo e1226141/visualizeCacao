@@ -57,13 +57,14 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
         improvedLayout: true,
         hierarchical: {
           enabled: true,
-          levelSeparation: 80,
-          nodeSpacing: 180,
+          levelSeparation: 100,
+          nodeSpacing: 200,
+          treeSpacing: 100,
           blockShifting: true,
           edgeMinimization: true,
           parentCentralization: true,
           direction: 'UD',
-          sortMethod: 'directed'
+          sortMethod: 'hubsize'
         }
       },
       physics: {
@@ -211,7 +212,7 @@ class CfgGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     const root = this.findRoot();
     this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
     this.edges.filter((e: DisplayEdge) => e.backedge).forEach((e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
-    this.setHierarchy(root);
+    this.setHierarchy(root, (_) => true);
   }
 
   toJSONGraphLegend (): JSON {

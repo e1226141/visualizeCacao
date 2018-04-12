@@ -56,6 +56,10 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
       physics: {
         hierarchicalRepulsion: {
           nodeDistance: 400
+        },
+        stabilization: {
+          enabled: true,
+          iterations: 100
         }
       }
     };
