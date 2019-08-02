@@ -54,9 +54,9 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
       layout: {
         improvedLayout: true,
         hierarchical: {
-          enabled: true,
+          enabled: false,
           levelSeparation: 160,
-          nodeSpacing: 520,
+          nodeSpacing: 200,
           blockShifting: true,
           edgeMinimization: false,
           parentCentralization: true,
@@ -74,11 +74,11 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
             damping: 0.03
         },
         stabilization: {
-            enabled: true,
+            enabled: false,
             iterations: 100
         }
-    }
-    };
+      }
+    } ;
     return options as JSON;
   }
 
@@ -212,8 +212,9 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
 
     const root = this.findRoot();
     this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
+    this.edges = this.edges.filter((e: DisplayEdge) => e.edgeType != EdgeType.sched);
     this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
-    this.setHierarchy(root, (e) => e.edgeType == EdgeType.cfg || e.edgeType == EdgeType.sched || e.edgeType == EdgeType.bb);
+    // this.setHierarchy(root, (e) => e.edgeType == EdgeType.cfg || e.edgeType == EdgeType.sched || e.edgeType == EdgeType.bb);
   }
 
  toJSONGraphLegend (): JSON {

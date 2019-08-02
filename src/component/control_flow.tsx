@@ -56,7 +56,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
       layout: {
         improvedLayout: true,
         hierarchical: {
-          enabled: true,
+          enabled: false,
           levelSeparation: 100,
           nodeSpacing: 200,
           treeSpacing: 100,
@@ -137,6 +137,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
       this._cfgNetwork.focus(id, { scale: 1.0 });
     };
 
+    //<NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
+    ///getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
     return (
       <div>
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
@@ -165,7 +167,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-            getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
+              getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
           </div>
           <Portal onClose={this._onHideLegend} open={this.state.showLegend}
             closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>

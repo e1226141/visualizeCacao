@@ -11,7 +11,7 @@ npm install semantic-ui-css --save
 npm install react-autosuggest --save
 npm install @types/react-autosuggest --save -d
 npm install uuid --save
-
+npm install elkjs --save
 
 Links:
 https://electron.atom.io/docs/tutorial/quick-start/
@@ -28,6 +28,9 @@ http://json2ts.com/
 Victory charting
 npm install victory --save
 npm install @types/victory --save
+
+stack datastructure
+npm install datastructures-js --save
 
 Split Pane: https://www.npmjs.com/package/react-splitter-layout
 npm install react-splitter-layout --save

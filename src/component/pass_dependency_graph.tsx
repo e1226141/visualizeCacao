@@ -46,16 +46,17 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       },
       layout: {
         hierarchical: {
-          enabled: true,
+          enabled: false,
           levelSeparation: 150
         }
       },
       physics: {
+        enabled: false,
         hierarchicalRepulsion: {
           nodeDistance: 250
         },
         stabilization: {
-          enabled: true,
+          enabled: false,
           iterations: 100
         }
       }
@@ -78,7 +79,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       layout: {
         improvedLayout: true,
         hierarchical: {
-          enabled: true,
+          enabled: false,
           direction: 'DU',
           sortMethod: 'hubsize'
         }
@@ -189,7 +190,7 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     if (!root) {
       return;
     }
-    this.setHierarchy(root, () => true);
+    // this.setHierarchy(root, () => true);
   }
 
  toJSONGraphLegend (): JSON {

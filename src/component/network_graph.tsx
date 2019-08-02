@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { Network, DataSet, Node, Edge, NetworkEvents } from 'vis';
+import { DisplayNode, DisplayEdge } from '../graph_builder';
+import *  as ELK from 'elkjs';
 import { v4 as uuid } from 'uuid';
+import { NodeType } from '../../out/visualizecacao-win32-x64/resources/app/src/data';
 
 export interface INetworkGraphProps {
   graph: any;
@@ -18,11 +21,15 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   private _edges: DataSet<Edge>;
   private _nodes: DataSet<Node>;
   private _network: Network;
+  private _elk: ELK;
+  private _firstCall = true;
 
   constructor(props: INetworkGraphProps) {
     super(props);
     this.state = { 'identifier': uuid() };
     this.createGraph = this.createGraph.bind(this);
+    this.computeCoordinates = this.computeCoordinates.bind(this);
+    this._elk = new ELK();
   }
 
   componentDidMount() {
@@ -57,7 +64,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
-    this._network.fit();
+    this.computeCoordinates( this.props);
     this._network.on('stabilizationIterationsDone', () => {
       this._network.setOptions( { physics: false } );
     });
@@ -82,9 +89,63 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       if (changedEdges && nextProps.graph.edges && this._edges) {
         this._edges.add(nextProps.graph.edges);
       }
-      this._network.stabilize();
+      this.computeCoordinates(nextProps);
     }
     return false;
+  }
+
+  private computeCoordinates(props: INetworkGraphProps) {
+    let elkGraph: any = {
+      id: 'root',
+      layoutOptions: {
+        'elk.algorithm': 'layered',
+        'elk.direction': 'DOWN',
+        //'elk.layered.nodePlacement.strategy': 'SIMPLE',
+        //'spacing.edgeNode': '40',
+        //'spacing.nodeNode': '150',
+        //'elk.layered.spacing.edgeNodeBetweenLayers': 35,
+        //'elk.edgeRouting': 'POLYLINE',
+        'elk.layered.layering.strategy': 'COFFMAN_GRAHAM',
+        //'elk.layered.layering.minWidth.upperBoundOnWidth': -1,
+        //'elk.layered.priority.straightness': 5
+        'elk.edgeLabels.inline': true,
+        'elk.padding': '[top=25,left=25,bottom=25,right=25]',
+        'elk.spacing.componentComponent': 25,
+        'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+        'elk.layered.spacing.edgeEdgeBetweenLayers': 50,
+        'elk.edgeRouting': 'POLYLINE',
+      },
+      children: JSON.parse(JSON.stringify(this._nodes.map(n => { return {id: n.id, width: 150, height: 25 }; } ))),
+      edges: JSON.parse(JSON.stringify(this._edges.get().map(e => { return {id: e.id, source: e.from, target: e.to }; } )))
+    };
+
+    console.log(JSON.stringify(elkGraph));
+
+    let result = this._elk.layout(elkGraph)
+      .then(g => {
+        let myUpdateSet: any = [];
+        let elkNodes = g.children;
+        console.log('elkNodes: ' + elkNodes.length);
+        elkNodes.forEach(n => {
+          if (n.id > 0) {
+            myUpdateSet.push({id: n.id, x: n.x, y: n.y});
+          }
+          if (n.children) {
+            console.log('elkNodes-childs: ' + n.children.length);
+            n.children.forEach(cn => {
+              myUpdateSet.push({id: cn.id, x: cn.x, y: cn.y});
+            });
+          }
+        });
+        console.log('updateSet: ' + myUpdateSet.length);
+        console.log(myUpdateSet);
+        this._nodes.update(myUpdateSet);
+        if (this._firstCall) {
+          this._network.fit();
+          this._firstCall = false;
+        }
+    })
+    .catch(console.error);
   }
 
   render() {

@@ -71,9 +71,11 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
         label: pass.name + '(' + pass.time + ' ns / ' + percentage.toFixed(1) + '%)'
       };
     });
+    console.log('chart_data: ' + JSON.stringify(chartData));
     return <Segment>
       <VictoryChart height={400} width={400}
         theme={VictoryTheme.material}
+        domain={{ x: [0, chartData.length], y: [0, 100] }}
         domainPadding={10}>
         <VictoryScatter data={chartData}
           bubbleProperty='y'

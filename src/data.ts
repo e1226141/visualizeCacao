@@ -26,7 +26,9 @@ export enum NodeType {
   LOADInst,
   PHIInst,
   RETURNInst,
-  SUBInst
+  SUBInst,
+  IFAssumptionInst,
+  SourceStateInst
 }
 
 /**

@@ -5,6 +5,7 @@ export class DisplayNode {
     name: string;
     root: boolean;
     nodeType: NodeType;
+    container: string;
 
     private _node: Node;
     getNode = (): Node => {
@@ -22,6 +23,7 @@ export class DisplayNode {
         this._node = pNode;
         this.label = pLabel;
         this.color = pColor;
+        this.container = String(pNode.BB);
     }
 }
 
@@ -253,6 +255,8 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
             outputValue += '[';
             if (node.nodeType === NodeType.IFInst) {
                 outputValue += '#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1];
+            } else if (node.nodeType === NodeType.IFAssumptionInst) {
+                    outputValue += '#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1];
             } else {
                 outputValue += node.operands.map((id) => { return '#' + id; }).toString();
             }
@@ -271,7 +275,9 @@ export abstract class GraphBuilder<N extends DisplayNode, E extends DisplayEdge>
         if (node.nodeType === NodeType.IFInst) {
             return 'IF [#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
         }
-
+        if (node.nodeType === NodeType.IFAssumptionInst) {
+            return 'IFAssumption [#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
+        }
         return node.name + (node.operands ? node.operands.map((id) => { return '#' + id; }).toString() : '');
     }
 
