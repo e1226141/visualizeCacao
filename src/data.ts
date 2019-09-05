@@ -1,13 +1,4 @@
 /**
- * This enum definitions help to avoid comparisons against the string constants later on.
- */
-export enum GraphType {
-  Unknown,      // artificial value when name can't be mapped
-  PassDependencyGraph,
-  HIR
-}
-
-/**
  * This enum definition helps to avoid comparison against string constants later on.
  * A list containing all possible values for an input file can be generated in app.tsx.
  */
@@ -47,7 +38,30 @@ export interface Serializable<T> {
   fromJSON(input: Object): T;
 }
 
-export class Node implements Serializable<Node> {
+export class Node {
+  id: number;
+  name: string;
+}
+
+export class DependencyGraphNode implements  Serializable<DependencyGraphNode>, Node {
+  id: number;
+  name: string;
+  pass: boolean;
+  artifact: boolean;
+  enabled: boolean;
+
+  fromJSON(input: any) {
+    this.id = input.id;
+    this.name = input.name;
+    this.pass = input.pass;
+    this.artifact = input.artifact;
+    this.enabled = input.enabled;
+
+    return this;
+  }
+}
+
+export class HIRNode implements Serializable<HIRNode>, Node {
     id: number;
     name: string;
     type: string;
@@ -85,6 +99,27 @@ export class Node implements Serializable<Node> {
     }
 }
 
+export class MachineInstruction implements Serializable<MachineInstruction>, Node {
+  id: number;
+  name: string;
+  type: string;
+  BB: string;
+  result: string;
+  operands: string[];
+  successors: string[];
+
+  fromJSON(input: any) {
+    this.id = input.id;
+    this.name = input.name;
+    this.type = input.type;
+    this.BB = input.BB;
+    this.result = input.result;
+    this.operands = input.operands;
+    this.successors = input.successors;
+    return this;
+  }
+}
+
 export class Edge implements Serializable<Edge> {
     from: number;
     to: number;
@@ -113,48 +148,29 @@ export class Edge implements Serializable<Edge> {
     }
 }
 
-export class Graph implements Serializable<Graph> {
-  type: string;
-  graphType: GraphType;
-  nodes: Node[];
+export class PassDependencyGraphData implements Serializable<PassDependencyGraphData> {
+  nodes: DependencyGraphNode[];
   edges: Edge[];
 
   fromJSON(input: any) {
-    this.type = input.type;
-    let graphTypeAssignment: GraphType | undefined = (<any>GraphType)[this.type];
-    if (graphTypeAssignment == undefined) {
-      this.graphType = GraphType.Unknown;
-    } else {
-      this.graphType = graphTypeAssignment;
-    }
-    this.nodes = input.nodes.map((node: any) => new Node().fromJSON(node));
+    this.nodes = input.nodes.map((node: any) => new DependencyGraphNode().fromJSON(node));
     this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
     return this;
   }
 }
 
-export class MachineInstruction implements  Serializable<MachineInstruction> {
-  id: number;
-  name: string;
-  type: string;
-  BB: string;
-  result: string;
-  operands: string[];
-  successors: string[];
+export class HIRGraphData implements Serializable<HIRGraphData> {
+  nodes: HIRNode[];
+  edges: Edge[];
 
   fromJSON(input: any) {
-    this.id = input.id;
-    this.name = input.name;
-    this.type = input.type;
-    this.BB = input.BB;
-    this.result = input.result;
-    this.operands = input.operands;
-    this.successors = input.successors;
+    this.nodes = input.nodes.map((node: any) => new HIRNode().fromJSON(node));
+    this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
     return this;
   }
 }
 
-export class LIR implements Serializable<LIR> {
+export class LIRGraphData implements Serializable<LIRGraphData> {
   instructions: MachineInstruction[];
   fromJSON(input: any) {
     this.instructions = input.instructions.map((instruction: any) => new MachineInstruction().fromJSON(instruction));
@@ -165,22 +181,17 @@ export class LIR implements Serializable<LIR> {
 export class Pass implements Serializable<Pass> {
     name: string;
     time: number;
-    graphs: Graph[];
-    lir?: LIR;
-
-    getGraph(graphType: GraphType): Graph | undefined {
-      if (this.graphs) {
-        return this.graphs.find( (graph) => graph.graphType == graphType);
-      }
-      return;
-    }
+    hir?: HIRGraphData;
+    lir?: LIRGraphData;
 
     fromJSON(input: any) {
       this.name = input.name;
       this.time = input.time;
-      this.graphs = input.graph.map((graph: any) => new Graph().fromJSON(graph));
+      if (input.HIR) {
+        this.hir = new HIRGraphData().fromJSON(input.HIR);
+      }
       if (input.LIR) {
-        this.lir = new LIR().fromJSON(input.LIR);
+        this.lir = new LIRGraphData().fromJSON(input.LIR);
       }
       return this;
     }
@@ -190,21 +201,14 @@ export class OptimizedMethod implements Serializable<OptimizedMethod> {
     class: string;
     method: string;
     desc: string;
-    graphs: Graph[];
+    passDependencyGraph: PassDependencyGraphData;
     passes: Pass[];
-
-    getGraph(graphType: GraphType): Graph | undefined {
-      if (this.graphs) {
-        return this.graphs.find( (graph) => graph.graphType == graphType);
-      }
-      return;
-    }
 
     fromJSON(input: any) {
       this.class = input.class;
       this.method = input.method;
       this.desc = input.desc;
-      this.graphs = input.graph.map((graph: any) => new Graph().fromJSON(graph));
+      this.passDependencyGraph = new PassDependencyGraphData().fromJSON(input.passDependencyGraph);
       this.passes = input.passes.map((pass: any) => new Pass().fromJSON(pass));
       return this;
     }

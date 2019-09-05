@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, MachineInstruction } from '../data';
+import { Pass, MachineInstruction, LIRGraphData } from '../data';
 import { List } from 'semantic-ui-react';
 
 export interface ILirListViewProps {
@@ -12,14 +12,14 @@ export class LirListView extends React.Component<ILirListViewProps, {}> {
     this.state = {};
   }
   render() {
-    const LIR = this.props.pass.lir;
-    if (!LIR) {
+    const lir: LIRGraphData | undefined = this.props.pass.lir;
+    if (!lir) {
       return <div></div>;
     }
     console.log('test');
 
-    const maxPadding = LIR.instructions.map(i => i.id).reduce( (a, b) => Math.max(a, b)).toString().length;
-    const instructionList = LIR.instructions.map(instruction => this.instructionToString(instruction, maxPadding));
+    const maxPadding = lir.instructions.map(i => i.id).reduce( (a, b) => Math.max(a, b)).toString().length;
+    const instructionList = lir.instructions.map(instruction => this.instructionToString(instruction, maxPadding));
     console.log(instructionList);
     return (
       <List>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, NodeType, Edge, EdgeType, Graph, GraphType } from '../data';
+import { Pass, Node, NodeType, Edge, EdgeType, HIRGraphData } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -112,14 +112,14 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
   private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
 
   render() {
-    const HIR: Graph | undefined = this.props.pass.getGraph(GraphType.HIR);
-    if (!HIR) {
+    const hir: HIRGraphData | undefined = this.props.pass.hir;
+    if (!hir) {
       return;
     }
 
     const graphBuilder = new DetailGraphBuilder(
-      HIR.nodes,
-      HIR.edges,
+      hir.nodes,
+      hir.edges,
       this.state.selectedNode,
       this.props.showAdjacentNodeDistance
     );

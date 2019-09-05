@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, LIR, MachineInstruction } from '../data';
+import { Pass, LIRGraphData, MachineInstruction } from '../data';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
@@ -68,12 +68,12 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
   }
 
   render() {
-    const LIR = this.props.pass.lir;
-    if (!LIR) {
+    const lir: LIRGraphData | undefined = this.props.pass.lir;
+    if (!lir) {
       return <div></div>;
     }
 
-    const lirBuilder = new LirGraphBuilder(LIR);
+    const lirBuilder = new LirGraphBuilder(lir);
     const graph: JSON = lirBuilder.toJSONGraph();
     const options: JSON = this._getDefaultOptions();
 
@@ -103,7 +103,7 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
           <Segment floated='right' compact size='mini' attached={true}>
             <Popup trigger={
               <Statistic size='mini' floated='right'>
-                <Statistic.Value>{LIR.instructions.length}</Statistic.Value>
+                <Statistic.Value>{lir.instructions.length}</Statistic.Value>
                 <Statistic.Label>{'machine instructions'}</Statistic.Label>
               </Statistic>
             } content={'number of machine instructions'} />
@@ -158,7 +158,7 @@ class LirGraphBuilder {
   protected _nodes: MachineBasicBlock[];
   protected _edges: MachineBasicBlockEdges[];
 
-  constructor(lir: LIR) {
+  constructor(lir: LIRGraphData) {
     this._nodes = this.createMachineBasicBlocks(lir.instructions);
     this._edges = this.createMachineBasicBlockEdges(this._nodes);
   }

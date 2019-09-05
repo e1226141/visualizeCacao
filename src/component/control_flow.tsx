@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, NodeType, Edge, EdgeType, Graph, GraphType } from '../data';
+import { Pass, Node, NodeType, Edge, EdgeType, HIRGraphData } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -104,13 +104,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
   private _onHideLegend = () => this.setState({ showLegend: false });
 
   render() {
-    const HIR: Graph | undefined = this.props.pass.getGraph(GraphType.HIR);
-    if (!HIR) {
+    const hir: HIRGraphData | undefined = this.props.pass.hir;
+    if (!hir) {
       return;
     }
     const cfgBuilder = new CfgGraphBuilder(
-      HIR.nodes.filter(n => n.isCfgNode()),
-      HIR.edges.filter(e => e.isCfgEdge()),
+      hir.nodes.filter(n => n.isCfgNode()),
+      hir.edges.filter(e => e.isCfgEdge()),
       this.props.showBB,
       this.props.showEdgeLabels
     );

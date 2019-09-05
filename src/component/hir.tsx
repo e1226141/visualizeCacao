@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { OptimizedMethod, Pass, GraphType } from '../data';
+import { OptimizedMethod, Pass, HIRGraphData, HIRNode } from '../data';
 import { ControlFlow } from './control_flow';
 import { DetailGraph } from './detail_graph';
 import { PassList } from './passlist';
@@ -22,7 +22,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   constructor(props: IHIRProps) {
     super(props);
     this.state = {
-      selectedPass: props.optimizedMethod.passes.filter(p => p.getGraph(GraphType.HIR) != null)[0],
+      selectedPass: props.optimizedMethod.passes.filter(p => p.hir != null)[0],
       showBB: true,
       showPasses: true,
       showEdgeLabels: true,
@@ -50,7 +50,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
     let passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
         showPass={ (pass: Pass) => {
-          const graph = pass.getGraph(GraphType.HIR);
+          const graph: HIRGraphData | undefined = pass.hir;
           return graph != null && graph.nodes != null && graph.nodes.length > 0;
         }} />
       : <div></div>;

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { HIR } from './hir';
 import { LIRView } from './lir_view';
-import { OptimizedMethod, Graph, GraphType, LIR, MachineInstruction } from '../data';
+import { OptimizedMethod, HIRGraphData } from '../data';
 import { PassDependencyGraph } from './pass_dependency_graph';
 import { PassStatistics } from './pass_statistics';
 import { Navigation, PageType } from './navigation';
@@ -69,9 +69,9 @@ export class App extends React.Component<AppProps, AppState> {
     const nodeNameSet = new Set();
     nodeNameSet.add('Unknown');
     this.props.optimizedMethod.passes.forEach(pass => {
-      const HIR: Graph | undefined = pass.getGraph(GraphType.HIR);
-      if (HIR) {
-        HIR.nodes.forEach(node => nodeNameSet.add(node.name));
+      const hir: HIRGraphData | undefined = pass.hir;
+      if (hir) {
+        hir.nodes.forEach(node => nodeNameSet.add(node.name));
       }
     });
     console.log(Array.from(nodeNameSet).sort().join(',\n'));
@@ -83,9 +83,9 @@ export class App extends React.Component<AppProps, AppState> {
     const edgeTypeSet = new Set();
     edgeTypeSet.add('Unknown');
     this.props.optimizedMethod.passes.forEach(pass => {
-      const HIR: Graph | undefined = pass.getGraph(GraphType.HIR);
-      if (HIR) {
-        HIR.edges.forEach(edge => edgeTypeSet.add(edge.type));
+      const hir: HIRGraphData | undefined = pass.hir;
+      if (hir) {
+        hir.edges.forEach(edge => edgeTypeSet.add(edge.type));
       }
     });
     console.log(Array.from(edgeTypeSet).sort().join(',\n'));

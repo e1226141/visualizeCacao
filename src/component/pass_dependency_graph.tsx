@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { OptimizedMethod, Node, NodeType, Edge, EdgeType, Graph, GraphType} from '../data';
+import { OptimizedMethod, Node, NodeType, Edge, PassDependencyGraphData, DependencyGraphNode} from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -94,7 +94,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
   private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
 
   render() {
-    const passDependencyGraph : Graph | undefined = this.props.optimizedMethod.getGraph(GraphType.PassDependencyGraph);
+    const passDependencyGraph: PassDependencyGraphData | undefined = this.props.optimizedMethod.passDependencyGraph;
     if (!passDependencyGraph) {
       return;
     }
@@ -182,7 +182,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
 
 class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
 
-  constructor(nodes: Node[], edges: Edge[], nameOfLastPass: string) {
+  constructor(nodes: DependencyGraphNode[], edges: Edge[], nameOfLastPass: string) {
     super();
     this.init(nodes, edges);
 
@@ -194,18 +194,8 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
   }
 
  toJSONGraphLegend (): JSON {
-    const nodes = [
-      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
-      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(NodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
-      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
-      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(NodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
-    ];
-    const edges = [
-      {from: 1, to: 2, color: {color: '#87B2EC'}},
-      {from: 2, to: 4, label: 'T', color: {color: '#5aa52b'}, title: 'true branch of an if statement'},
-      {from: 2, to: 3, label: 'F', color: {color: '#7C29F0'}, title: 'false branch of an if statement'},
-      {from: 3, to: 2, title: 'backedge', color: {color: '#EE0000'}}
-    ];
+    const nodes = [{}];
+    const edges = [{}];
     let graph: any = {
       'nodes': JSON.parse(JSON.stringify(nodes)),
       'edges': JSON.parse(JSON.stringify(edges))
