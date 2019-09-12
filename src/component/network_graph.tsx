@@ -48,6 +48,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     }
     this._edges = new DataSet(this.props.graph.edges);
     this._nodes = new DataSet(this.props.graph.nodes);
+    this.computeCoordinates(this.props);
+
     this._network = new Network(container, {
       'edges': this._edges,
       'nodes': this._nodes
@@ -62,10 +64,6 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
-    this.computeCoordinates( this.props);
-    this._network.on('stabilizationIterationsDone', () => {
-      this._network.setOptions( { physics: false } );
-    });
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {
@@ -104,17 +102,17 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         //'elk.layered.compaction.postCompaction.constraints': 'QUADRATIC',
         'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
         //'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
-        'elk.layered.wrapping.additionalEdgeSpacing': 50,
+        'elk.layered.wrapping.additionalEdgeSpacing': 10,
         //'elk.edgeLabels.inline': true,
-        'elk.padding': '[top=20,left=20,bottom=20,right=20]',
-        'elk.layered.spacing.nodeNodeBetweenLayers': 140,
+        'elk.padding': '[top=10,left=20,bottom=10,right=20]',
+        'elk.layered.spacing.nodeNodeBetweenLayers': 70,
         'elk.layered.spacing.edgeEdgeBetweenLayers': 20,
         'elk.edgeRouting': 'SPLINE',
         //'elk.layered.highDegreeNodes.treatment': true,
         //'org.eclipse.elk.interactive': false
       },
-      children: JSON.parse(JSON.stringify(this._nodes.map(n => { return {id: n.id, width: 200, height: 45 }; } ))),
-      edges: JSON.parse(JSON.stringify(this._edges.get().map(e => { return {id: e.id, source: e.from, target: e.to }; } )))
+      children: JSON.parse(JSON.stringify(this._nodes.map(n => this.mapToNode(n)))),
+      edges: JSON.parse(JSON.stringify(this._edges.get().map(e => this.mapToEdge(e))))
     };
 
     // console.log(JSON.stringify(elkGraph));
@@ -125,9 +123,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         let elkNodes = g.children;
         // console.log('elkNodes: ' + elkNodes.length);
         elkNodes.forEach((n: any) => {
-          if (n.id > 0) {
-            myUpdateSet.push({id: n.id, x: n.x, y: n.y});
-          }
+          myUpdateSet.push({id: n.id, x: n.x, y: n.y});
           if (n.children) {
             // console.log('elkNodes-childs: ' + n.children.length);
             n.children.forEach((cn: any) => {
@@ -136,7 +132,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
           }
         });
         // console.log('updateSet: ' + myUpdateSet.length);
-        console.log(myUpdateSet);
+        //console.log(myUpdateSet);
         this._nodes.update(myUpdateSet);
         if (this._firstCall) {
           this._network.fit();
@@ -144,6 +140,23 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         }
     })
     .catch(console.error);
+  }
+
+  private mapToNode(n: Node): { id: string | number | undefined; width: number; height: number; } {
+    let x = 200;
+    let y = 45;
+    const label = n.label;
+    if (label) {
+      const lines =  label.split('\n');
+      y = 20 + 25 * lines.length;
+      const longestLine = Math.max(...(lines.map(el => el.length)));
+      x = 50 + longestLine * 10;
+    }
+    return { id: n.id, width: x, height: y };
+  }
+
+  private mapToEdge(e: Edge): { id: string | number | undefined; source: string | number | undefined; target: string | number | undefined; } {
+    return { id: e.id, source: e.from, target: e.to };
   }
 
   render() {

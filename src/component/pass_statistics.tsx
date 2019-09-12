@@ -125,7 +125,6 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
       recognizedTypes += this.getTypeDisplayName(nextParameterType);
       nextParameterType = '';
     }
-    console.log('recognizedTypes: ' + recognizedTypes);
     return recognizedTypes;
   }
 
