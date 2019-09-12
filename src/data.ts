@@ -38,12 +38,12 @@ export interface Serializable<T> {
   fromJSON(input: Object): T;
 }
 
-export class Node {
+export class BaseNode {
   id: number;
   name: string;
 }
 
-export class DependencyGraphNode implements  Serializable<DependencyGraphNode>, Node {
+export class DependencyGraphNode implements  Serializable<DependencyGraphNode>, BaseNode {
   id: number;
   name: string;
   pass: boolean;
@@ -53,15 +53,14 @@ export class DependencyGraphNode implements  Serializable<DependencyGraphNode>, 
   fromJSON(input: any) {
     this.id = input.id;
     this.name = input.name;
-    this.pass = input.pass;
-    this.artifact = input.artifact;
-    this.enabled = input.enabled;
-
+    this.pass = JSON.parse(input.pass);
+    this.artifact = JSON.parse(input.artifact);
+    this.enabled = JSON.parse(input.enabled);
     return this;
   }
 }
 
-export class HIRNode implements Serializable<HIRNode>, Node {
+export class HIRNode implements Serializable<HIRNode>, BaseNode {
     id: number;
     name: string;
     type: string;
@@ -99,7 +98,7 @@ export class HIRNode implements Serializable<HIRNode>, Node {
     }
 }
 
-export class MachineInstruction implements Serializable<MachineInstruction>, Node {
+export class MachineInstruction implements Serializable<MachineInstruction>, BaseNode {
   id: number;
   name: string;
   type: string;
@@ -120,7 +119,12 @@ export class MachineInstruction implements Serializable<MachineInstruction>, Nod
   }
 }
 
-export class Edge implements Serializable<Edge> {
+export class BaseEdge {
+  from: number;
+  to: number;
+}
+
+export class Edge implements Serializable<Edge>, BaseEdge {
     from: number;
     to: number;
     type: string;

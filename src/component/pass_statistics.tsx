@@ -2,7 +2,6 @@ import * as React from 'react';
 import { OptimizedMethod, Pass } from '../data';
 import { VictoryChart, VictoryAxis, VictoryTooltip, VictoryTheme, VictoryScatter } from 'victory';
 import { Segment, Header, Table } from 'semantic-ui-react';
-import SegmentGroup from 'semantic-ui-react/dist/commonjs/elements/Segment/SegmentGroup';
 
 export interface IPassStatisticsProps {
   optimizedMethod: OptimizedMethod;
@@ -82,7 +81,7 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
           maxBubbleSize={10}
           style={{ labels: { fill: 'black', fontSize: 12 } }}
           labels={(d) => d.x}
-          labelComponent={<VictoryTooltip></VictoryTooltip>}
+          labelComponent={<VictoryTooltip/>}
         />
         <VictoryAxis dependentAxis
           tickFormat={(tick) => `${tick}%`}

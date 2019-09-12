@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, Node, NodeType, Edge, EdgeType, HIRGraphData } from '../data';
+import { Pass, HIRNode, NodeType, Edge, EdgeType, HIRGraphData } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -200,20 +200,20 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
   }
 }
 
-class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
+class DetailGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, DisplayEdge<Edge>> {
   private selectedNode: number;
   private showAdjacentNodeDistance: number;
 
-  constructor(nodes: Node[], edges: Edge[], pSelectedNode: number, pShowAdjacentNodeDistance: number) {
+  constructor(nodes: HIRNode[], edges: Edge[], pSelectedNode: number, pShowAdjacentNodeDistance: number) {
     super();
     this.selectedNode = pSelectedNode;
     this.showAdjacentNodeDistance = pShowAdjacentNodeDistance;
     this.init(nodes, edges);
 
-    const root = this.findRoot();
-    this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
-    this.edges = this.edges.filter((e: DisplayEdge) => e.edgeType != EdgeType.sched);
-    this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
+    // TODO const root = this.findRoot();
+    // TODO this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
+    // TODO this.edges = this.edges.filter((e: DisplayEdge) => e.edgeType != EdgeType.sched);
+    // TODO this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
     // this.setHierarchy(root, (e) => e.edgeType == EdgeType.cfg || e.edgeType == EdgeType.sched || e.edgeType == EdgeType.bb);
   }
 
@@ -237,15 +237,32 @@ class DetailGraphBuilder extends GraphBuilder<DisplayNode, DisplayEdge> {
     return graph as JSON;
   }
 
-  toDisplayNode (node: Node): DisplayNode {
-    return new DisplayNode(node,
-      this.getNodeDisplayString(node, false),
-      this.getNodeBackgroundColor(node.nodeType)
-    );
+  protected toDisplayNode (node: HIRNode): DisplayNode<HIRNode> {
+    const result: DisplayNode<HIRNode> = new DisplayNode<HIRNode>(node, node.name);
+    result.color = this.getNodeBackgroundColor(node.nodeType);
+    return result;
   }
 
-  toDisplayEdge (edge: Edge): DisplayEdge {
-    const dashes = edge.edgeType === EdgeType.bb;
-    return new DisplayEdge(edge, edge.type, this.getEdgeColor(edge), 2, dashes);
+  protected toDisplayEdge (edge: Edge): DisplayEdge<Edge> {
+    const result: DisplayEdge<Edge> = new DisplayEdge<Edge>(edge, edge.type);
+    if (edge.edgeType == EdgeType.bb) {
+      result.dashes = true;
+    }
+    return result;
+  }
+
+  private getNodeBackgroundColor(nodeType: NodeType): string {
+    switch (nodeType) {
+      case NodeType.IFInst:
+          return '#A1EC76';
+      case NodeType.RETURNInst:
+          return '#FFA807';
+      case NodeType.GOTOInst:
+          return '#97C2FC';
+      case NodeType.PHIInst:
+          return '#FFCA66';
+      default:
+          return '#97C2FC';
+    }
   }
 }

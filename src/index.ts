@@ -3,7 +3,6 @@ import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-insta
 import { enableLiveReload } from 'electron-compile';
 import * as fs from 'fs';
 import { OptimizedMethod } from './data';
-import { ENETUNREACH } from 'constants';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

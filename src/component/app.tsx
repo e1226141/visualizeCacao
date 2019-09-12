@@ -49,7 +49,7 @@ export class App extends React.Component<AppProps, AppState> {
       default: content = (<div>unknown or unsupported page type: {this.state.pageType} </div>);
     }
     return (
-      <SplitterLayout horizontal primaryIndex={1} secondaryInitialSize={70}>
+      <SplitterLayout primaryIndex={1} secondaryInitialSize={70}>
         <div><Navigation selectedPage={this.state.pageType} onSelectPage={this._onSelectPage.bind(this)}></Navigation></div>
         <div>{content}</div>
       </SplitterLayout>
