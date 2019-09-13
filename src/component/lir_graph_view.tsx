@@ -31,7 +31,8 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
           face: 'monospace',
           align: 'left',
           multi: 'md'
-        }
+        },
+        borderWidthSelected: 4
       },
       edges: {
         arrows: {
@@ -44,24 +45,17 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
         },
         smooth: {
           enabled: true,
-          type: 'continuous'
-        }
+          type: 'straightCross'
+        },
+        selectionWidth: 3
       },
       layout: {
         hierarchical: {
-          enabled: false,
-          levelSeparation: 400
+          enabled: false
         }
       },
       physics: {
-        enabled: false,
-        hierarchicalRepulsion: {
-          nodeDistance: 400
-        },
-        stabilization: {
-          enabled: false,
-          iterations: 100
-        }
+        enabled: false
       }
     };
     return options as JSON;

@@ -2,7 +2,7 @@
  * This enum definition helps to avoid comparison against string constants later on.
  * A list containing all possible values for an input file can be generated in app.tsx.
  */
-export enum NodeType {
+export enum HIRNodeType {
   Unknown,      // artificial value when name can't be mapped
   ADDInst,
   ALOADInst,
@@ -24,9 +24,23 @@ export enum NodeType {
 
 /**
  * This enum definition helps to avoid comparison against string constants later on.
+ */
+export enum GraphDependencyEdgeType {
+  Unknown,      // artificial value when name can't be mapped
+  requires,
+  provides,
+  modifies,
+  scheduleBefore,
+  scheduleAfter,
+  scheduleImmediateBefore,
+  scheduleImmediateAfter
+}
+
+/**
+ * This enum definition helps to avoid comparison against string constants later on.
  * A list containing all possible values for an input file can be generated in app.tsx.
  */
-export enum EdgeType {
+export enum HIREdgeType {
   Unknown,    // artificial value when name can't be mapped
   bb,
   cfg,
@@ -70,7 +84,7 @@ export class HIRNode implements Serializable<HIRNode>, BaseNode {
     value?: number;
     condition: string;
     sideEffects?: boolean;
-    nodeType: NodeType;
+    nodeType: HIRNodeType;
 
     fromJSON(input: any) {
       this.id = input.id;
@@ -84,9 +98,9 @@ export class HIRNode implements Serializable<HIRNode>, BaseNode {
       this.sideEffects = input.sideEffects;
 
       // map node name to NodeType enum
-      let nodeTypeAssignment: NodeType | undefined = (<any>NodeType)[this.name];
+      let nodeTypeAssignment: HIRNodeType | undefined = (<any>HIRNodeType)[this.name];
       if (nodeTypeAssignment == undefined) {
-        this.nodeType = NodeType.Unknown;
+        this.nodeType = HIRNodeType.Unknown;
       } else {
         this.nodeType = nodeTypeAssignment;
       }
@@ -94,7 +108,7 @@ export class HIRNode implements Serializable<HIRNode>, BaseNode {
     }
 
     isCfgNode = (): boolean => {
-      return [NodeType.BeginInst, NodeType.GOTOInst, NodeType.RETURNInst, NodeType.IFInst].some(nameType => this.nodeType === nameType );
+      return [HIRNodeType.BeginInst, HIRNodeType.GOTOInst, HIRNodeType.RETURNInst, HIRNodeType.IFInst].some(nameType => this.nodeType === nameType );
     }
 }
 
@@ -124,12 +138,41 @@ export class BaseEdge {
   to: number;
 }
 
-export class Edge implements Serializable<Edge>, BaseEdge {
+export class DependencyGraphEdge implements Serializable<DependencyGraphEdge>, BaseEdge {
+  from: number;
+  to: number;
+  type: string;
+  edgeType: GraphDependencyEdgeType;
+
+  fromJSON(input: any) {
+    this.from = input.from;
+    this.to = input.to;
+    this.type = input.type;
+    this.edgeType = this.mapGraphDependencEdgeType(input.type);
+    console.log('edgeType: ' + this.edgeType);
+    return this;
+  }
+
+  mapGraphDependencEdgeType(type: string): GraphDependencyEdgeType {
+    switch (type) {
+      case 'requires': return GraphDependencyEdgeType.requires;
+      case 'provides': return GraphDependencyEdgeType.provides;
+      case 'modifies': return GraphDependencyEdgeType.modifies;
+      case 'schedule-before': return GraphDependencyEdgeType.scheduleBefore;
+      case 'schedule-after': return GraphDependencyEdgeType.scheduleAfter;
+      case 'schedule-imm-before': return GraphDependencyEdgeType.scheduleImmediateBefore;
+      case 'schedule-imm-after': return GraphDependencyEdgeType.scheduleImmediateAfter;
+      default: return GraphDependencyEdgeType.Unknown;
+    }
+  }
+}
+
+export class HIREdge implements Serializable<HIREdge>, BaseEdge {
     from: number;
     to: number;
     type: string;
     trueBranch?: boolean;
-    edgeType: EdgeType;
+    edgeType: HIREdgeType;
 
     fromJSON(input: any) {
       this.from = input.from;
@@ -138,9 +181,9 @@ export class Edge implements Serializable<Edge>, BaseEdge {
       this.trueBranch = input.trueBranch;
 
       // map type to EdgeType enum
-      let edgeTypeAssignment: EdgeType | undefined = (<any>EdgeType)[this.type];
+      let edgeTypeAssignment: HIREdgeType | undefined = (<any>HIREdgeType)[this.type];
       if (edgeTypeAssignment == undefined) {
-        this.edgeType = EdgeType.Unknown;
+        this.edgeType = HIREdgeType.Unknown;
       } else {
         this.edgeType = edgeTypeAssignment;
       }
@@ -148,28 +191,28 @@ export class Edge implements Serializable<Edge>, BaseEdge {
     }
 
     isCfgEdge = (): boolean => {
-      return [EdgeType.cfg, EdgeType.bb].some(type => this.edgeType == type );
+      return [HIREdgeType.cfg, HIREdgeType.bb].some(type => this.edgeType == type );
     }
 }
 
 export class PassDependencyGraphData implements Serializable<PassDependencyGraphData> {
   nodes: DependencyGraphNode[];
-  edges: Edge[];
+  edges: DependencyGraphEdge[];
 
   fromJSON(input: any) {
     this.nodes = input.nodes.map((node: any) => new DependencyGraphNode().fromJSON(node));
-    this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
+    this.edges = input.edges.map((edge: any) => new DependencyGraphEdge().fromJSON(edge));
     return this;
   }
 }
 
 export class HIRGraphData implements Serializable<HIRGraphData> {
   nodes: HIRNode[];
-  edges: Edge[];
+  edges: HIREdge[];
 
   fromJSON(input: any) {
     this.nodes = input.nodes.map((node: any) => new HIRNode().fromJSON(node));
-    this.edges = input.edges.map((edge: any) => new Edge().fromJSON(edge));
+    this.edges = input.edges.map((edge: any) => new HIREdge().fromJSON(edge));
     return this;
   }
 }

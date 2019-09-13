@@ -1,8 +1,8 @@
-.react-autosuggest__input {    
-    height: 30px;    
+.react-autosuggest__input {
+    height: 30px;
     width: 100%;
     font-size: 120%;
-    padding-left: 5px; 
+    padding-left: 5px;
     border: 1px solid #aaa;
     border-radius: 3px;
 }
@@ -48,6 +48,6 @@
     background-color: #ddd;
 }
 
-.inline-block {
-    display: inline;
+.visNetwork {
+    background-color: '#f7f9ef';
 }

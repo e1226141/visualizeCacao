@@ -161,7 +161,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
 
   render() {
     return (
-      <div id={this.state.identifier} style={this.props.style} />
+      <div id={this.state.identifier} style={this.props.style} className='visNetwork' />
     );
   }
 }

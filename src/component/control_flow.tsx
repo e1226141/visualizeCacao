@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, HIRNode, NodeType, Edge, EdgeType, HIRGraphData } from '../data';
+import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -37,6 +37,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
       width: '100%',
       nodes: {
         shape: 'box',
+        borderWidthSelected: 4
       },
       edges: {
         arrows: {
@@ -49,22 +50,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
         },
         smooth: {
           enabled: true,
-          type: 'continuous'
+          type: 'straightCross'
         },
-        chosen: false
+        selectionWidth: 3
       },
       layout: {
-        improvedLayout: true,
         hierarchical: {
-          enabled: false,
-          levelSeparation: 100,
-          nodeSpacing: 200,
-          treeSpacing: 100,
-          blockShifting: true,
-          edgeMinimization: true,
-          parentCentralization: true,
-          direction: 'UD',
-          sortMethod: 'hubsize'
+          enabled: false
         }
       },
       physics: {
@@ -196,11 +188,11 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
   }
 }
 
-class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, DisplayEdge<Edge>> {
+class CfgGraphBuilder extends GraphBuilder<HIRNode, HIREdge, DisplayNode<HIRNode>, DisplayEdge<HIREdge>> {
   private showBB: boolean;
   private showEdgeLabels: boolean;
 
-  constructor(cfgNodes: HIRNode[], cfgEdges: Edge[], pShowBB: boolean, pShowEdgeLabels: boolean) {
+  constructor(cfgNodes: HIRNode[], cfgEdges: HIREdge[], pShowBB: boolean, pShowEdgeLabels: boolean) {
     super();
     this.showBB = pShowBB;
     this.showEdgeLabels = pShowEdgeLabels;
@@ -218,15 +210,15 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
 
   private detectAndMarkBackedges(cfgNodes: HIRNode[]) {
     const root = cfgNodes.find(node => node.root === true);
-    const backedgeSet = new Set<DisplayEdge<Edge>>();
-    this.findBackedges(root, e => e && e.edgeType !== EdgeType.op, new Set<number>(), backedgeSet);
+    const backedgeSet = new Set<DisplayEdge<HIREdge>>();
+    this.findBackedges(root, e => e && e.edgeType !== HIREdgeType.op, new Set<number>(), backedgeSet);
     this.edges
-      .filter((e: DisplayEdge<Edge>) => backedgeSet.has(e))
-      .forEach((e: DisplayEdge<Edge>) => { e.color = { color: '#EE0000' }; });
+      .filter((e: DisplayEdge<HIREdge>) => backedgeSet.has(e))
+      .forEach((e: DisplayEdge<HIREdge>) => e.setColor('#EE0000'));
   }
 
-  protected findBackedges(node: HIRNode | undefined, ignoredEdges: (edge: Edge) => boolean,
-                          visitedNodes: Set<number>, backedgeSet: Set<DisplayEdge<Edge>>) {
+  protected findBackedges(node: HIRNode | undefined, ignoredEdges: (edge: HIREdge) => boolean,
+                          visitedNodes: Set<number>, backedgeSet: Set<DisplayEdge<HIREdge>>) {
     if (node == undefined) {
         return;
     }
@@ -253,10 +245,10 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
 
   toJSONGraphLegend (): JSON {
     const nodes = [
-      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
-      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(NodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
-      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
-      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(NodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
+      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
+      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(HIRNodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
+      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
+      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
     ];
     const edges = [
       {from: 1, to: 2, color: {color: '#87B2EC'}},
@@ -273,41 +265,63 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
 
   protected toDisplayNode (node: HIRNode): DisplayNode<HIRNode> {
     const result: DisplayNode<HIRNode> = new DisplayNode<HIRNode>(node, this.getNodeLabel(node, false));
-    result.color = this.getNodeBackgroundColor(node.nodeType);
+    result.setColor(this.getNodeBackgroundColor(node.nodeType));
     return result;
   }
 
-  protected toDisplayEdge (edge: Edge): DisplayEdge<Edge> {
-    const result: DisplayEdge<Edge> = new DisplayEdge<Edge>(edge, this.getEdgeLabel(edge));
-    if (edge.edgeType == EdgeType.bb) {
+  protected toDisplayEdge (edge: HIREdge): DisplayEdge<HIREdge> {
+    const result: DisplayEdge<HIREdge> = new DisplayEdge<HIREdge>(edge, this.getEdgeLabel(edge));
+    if (edge.edgeType == HIREdgeType.bb) {
       result.dashes = true;
     }
+    const color = this.getEdgeColor(edge);
+    result.setColor(color);
     return result;
   }
 
-  private getNodeBackgroundColor(nodeType: NodeType): string {
-    if (nodeType == NodeType.GOTOInst && !this.showBB) {
+  private getNodeBackgroundColor(nodeType: HIRNodeType): string {
+    if (nodeType == HIRNodeType.GOTOInst && !this.showBB) {
       return '#C7E2FC';
     }
     switch (nodeType) {
-      case NodeType.IFInst:
+      case HIRNodeType.IFInst:
           return '#A1EC76';
-      case NodeType.RETURNInst:
+      case HIRNodeType.RETURNInst:
           return '#FFA807';
-      case NodeType.GOTOInst:
+      case HIRNodeType.GOTOInst:
           return '#97C2FC';
-      case NodeType.PHIInst:
+      case HIRNodeType.PHIInst:
           return '#FFCA66';
       default:
           return '#97C2FC';
     }
   }
 
-  protected getEdgeLabel(edge: Edge): string {
+  protected getEdgeLabel(edge: HIREdge): string {
     if (this.showEdgeLabels && edge.trueBranch != undefined) {
       return edge.trueBranch ? 'T' : 'F';
     }
     return '';
+  }
+
+  protected getEdgeColor(edge: HIREdge): string {
+    switch (edge.edgeType) {
+        case HIREdgeType.cfg:
+            // the branches of an 'if' statement get different colors
+            if (edge.trueBranch == true) {
+                return '#5aa52b';
+            } if (edge.trueBranch == false) {
+                return '#7C29F0';
+            }
+            // otherwise normal control flow
+            return '#87B2EC';
+        case HIREdgeType.op:
+            return '#808080';
+        case HIREdgeType.sched:
+            return '#FDBFC9';
+        default:
+            return '#000000';
+    }
   }
 
   protected getNodeLabel(node: HIRNode, simpleDisplay: boolean): string {
@@ -315,14 +329,14 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
         return this.getSimpleNodeLabel(node);
     }
     let outputValue = '[' + node.id + ']: ' + node.name;
-    if (node.nodeType === NodeType.CONSTInst) {
+    if (node.nodeType === HIRNodeType.CONSTInst) {
         outputValue += ': ' + node.value;
     }
     if (node.operands) {
         outputValue += '[';
-        if (node.nodeType === NodeType.IFInst) {
+        if (node.nodeType === HIRNodeType.IFInst) {
             outputValue += '#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1];
-        } else if (node.nodeType === NodeType.IFAssumptionInst) {
+        } else if (node.nodeType === HIRNodeType.IFAssumptionInst) {
                 outputValue += '#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1];
         } else {
             outputValue += node.operands.map((id) => { return '#' + id; }).toString();
@@ -333,16 +347,16 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
   }
 
   protected getSimpleNodeLabel(node: HIRNode): string {
-    if (node.nodeType === NodeType.CONSTInst) {
+    if (node.nodeType === HIRNodeType.CONSTInst) {
         return 'Const: ' + node.value;
     }
-    if (node.nodeType === NodeType.RETURNInst) {
+    if (node.nodeType === HIRNodeType.RETURNInst) {
         return 'RETURN' + (node.operands ? ' #' + node.operands[0] : '');
     }
-    if (node.nodeType === NodeType.IFInst) {
+    if (node.nodeType === HIRNodeType.IFInst) {
         return 'IF [#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
     }
-    if (node.nodeType === NodeType.IFAssumptionInst) {
+    if (node.nodeType === HIRNodeType.IFAssumptionInst) {
         return 'IFAssumption [#' + node.operands[0] + ' ' + this.displayIFCondition(node.condition) + ' #' + node.operands[1] + ']';
     }
     return node.name + (node.operands ? node.operands.map((id) => { return '#' + id; }).toString() : '');
@@ -368,7 +382,7 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
   }
 
   private collapseToBB(): void {
-    this.nodes = this.nodes.filter(node => node.getNode().nodeType === NodeType.BeginInst);
+    this.nodes = this.nodes.filter(node => node.getNode().nodeType === HIRNodeType.BeginInst);
     this.nodes.forEach((beginInst: DisplayNode<HIRNode>) => {
 
       // BeginInst and EndInst have a 1:1 relationship
@@ -376,7 +390,7 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
       if (!bbEdgeArray) {
         return;
       }
-      const bbEdge = bbEdgeArray.filter(e => e.getEdge().edgeType === EdgeType.bb)[0];
+      const bbEdge = bbEdgeArray.filter(e => e.getEdge().edgeType === HIREdgeType.bb)[0];
       const endInst = this.displayNodeMap.get(bbEdge.to);
       if (!endInst) {
         return;
@@ -384,61 +398,22 @@ class CfgGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, 
 
       // adjust the label
       beginInst.label = 'BB #' + beginInst.id + ' => #' + endInst.id;
-      if (endInst.getNode().nodeType !== NodeType.GOTOInst) {
+      if (endInst.getNode().nodeType !== HIRNodeType.GOTOInst) {
         beginInst.label += '\n' + this.getNodeLabel(endInst.getNode(), true);
       }
 
       // adjust outgoing edges to the combined begin block
       const edgeList = this.displayEdgeMap.get(endInst.id);
       if (edgeList) {
-        edgeList.forEach( (e: DisplayEdge<Edge>) => { e.from = beginInst.id; });
+        edgeList.forEach( (e: DisplayEdge<HIREdge>) => { e.from = beginInst.id; });
       }
 
       // color is based on the endInsts
-      beginInst.color = this.getNodeBackgroundColor(endInst.getNode().nodeType);
+      beginInst.setColor(this.getNodeBackgroundColor(endInst.getNode().nodeType));
       beginInst.endInstLink = endInst.id;
     });
 
     // remove all 'bb' edges
-    this.edges = this.edges.filter(e => e.getEdge().edgeType !== EdgeType.bb);
+    this.edges = this.edges.filter(e => e.getEdge().edgeType !== HIREdgeType.bb);
   }
-
-  /*
-  private collapseToBB(): void {
-    this.nodes = this.nodes.filter(node => node.nodeType === NodeType.BeginInst);
-    this.nodes.forEach((beginInst: DisplayNode) => {
-
-      // BeginInst and EndInst have a 1:1 relationship
-      const bbEdgeArray = this.displayEdgeMap.get(beginInst.id);
-      if (!bbEdgeArray) {
-        return;
-      }
-      const bbEdge = bbEdgeArray.filter(e => e.edgeType === EdgeType.bb)[0];
-      const endInst = this.displayNodeMap.get(bbEdge.to);
-      if (!endInst) {
-        return;
-      }
-
-      // adjust the label
-      beginInst.label = 'BB #' + beginInst.id + ' => #' + endInst.id;
-      if (endInst.nodeType !== NodeType.GOTOInst) {
-        beginInst.label += '\n' + this.getNodeDisplayString(endInst.getNode(), true);
-      }
-
-      // adjust outgoing edges to the combined begin block
-      const edgeList = this.displayEdgeMap.get(endInst.id);
-      if (edgeList) {
-        edgeList.forEach( (e: DisplayEdge) => { e.from = beginInst.id; });
-      }
-
-      // color is based on the endInsts
-      beginInst.color = this.getNodeBackgroundColor(endInst.nodeType);
-      beginInst.endInstLink = endInst.id;
-    });
-
-    // remove all 'bb' edges
-    this.edges = this.edges.filter(e => e.edgeType !== EdgeType.bb);
-  }
-
- */
 }

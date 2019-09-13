@@ -11,7 +11,7 @@ export class DisplayNode<IN_N extends BaseNode> {
 
     // display attributes
     label: string;
-    color?: string;
+    color?: {};
     endInstLink?: number;
     level?: number;
     shapeProperties?: JSON;
@@ -21,6 +21,10 @@ export class DisplayNode<IN_N extends BaseNode> {
         this.id = pNode.id;
         this.name = pNode.name;
         this.label = label;
+    }
+
+    public setColor(color: string) {
+        this.color = {background: color, highlight: color};
     }
 }
 
@@ -45,6 +49,10 @@ export class DisplayEdge<IN_E extends BaseEdge> {
         this.from = pEdge.from;
         this.to = pEdge.to;
         this.label = label;
+    }
+
+    public setColor(color: string) {
+        this.color = {color: color, highlight: color};
     }
 }
 

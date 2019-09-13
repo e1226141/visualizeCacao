@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { OptimizedMethod, Edge, PassDependencyGraphData, DependencyGraphNode} from '../data';
+import { OptimizedMethod, DependencyGraphEdge, GraphDependencyEdgeType, PassDependencyGraphData, DependencyGraphNode} from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -28,13 +28,11 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       showOnlyEnabledPasses: true
     };
 
-    this._toggleGroupEdges = this._toggleGroupEdges.bind(this);
     this._toggleShowOnlyEnabledPasses = this._toggleShowOnlyEnabledPasses.bind(this);
     this._onShowLegend = this._onShowLegend.bind(this);
     this._onHideLegend = this._onHideLegend.bind(this);
   }
 
-  private _toggleGroupEdges = () => this.setState((prevState) => ({ ...prevState, groupEdges: !prevState.groupEdges }));
   private _toggleShowOnlyEnabledPasses =
     () => this.setState((prevState) => ({ ...prevState, showOnlyEnabledPasses: !prevState.showOnlyEnabledPasses }))
   private _onShowLegend = () => this.setState( (prevState) => ({...prevState, showLegend: !this.state.showLegend }));
@@ -85,14 +83,10 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
                     style={{paddingRight: '20px', width: '100%'}} />
                   <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
                     content='displays the legend of the detail network graph'/>
-                  <Popup trigger={<Checkbox label='group edges' checked={this.state.groupEdges} onClick={() => this._toggleGroupEdges()}
-                    style={{paddingRight: '20px'}}/>} content='group different edges between each pair nodes' style={{paddingRight: '20px'}}
-                  />
                   <Popup trigger={<Checkbox label='only enabled passes'
                     checked={this.state.showOnlyEnabledPasses} onClick={() => this._toggleShowOnlyEnabledPasses()}
                     style={{paddingRight: '20px'}}/>} content='hides all passes have not been enabled' style={{paddingRight: '20px'}}
                   />
-
               </Segment.Inline>
             </Segment>
             <Segment floated='right' compact size='mini'>
@@ -142,7 +136,8 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       height: '100%',
       width: '100%',
       nodes: {
-        shape: 'box'
+        shape: 'box',
+        borderWidthSelected: 4
       },
       edges: {
         arrows: {
@@ -152,25 +147,20 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
         },
         smooth: {
           enabled: true,
-          type: 'cubicBezier',
-          forceDirection: true
-        }
+          type: 'straightCross'
+        },
+        selectionWidth: 3,
+        color: {
+          inherit: false
+        },
       },
       layout: {
         hierarchical: {
-          enabled: false,
-          levelSeparation: 150
+          enabled: false
         }
       },
       physics: {
-        enabled: false,
-        hierarchicalRepulsion: {
-          nodeDistance: 250
-        },
-        stabilization: {
-          enabled: false,
-          iterations: 100
-        }
+        enabled: false
       }
     };
     return options as JSON;
@@ -191,9 +181,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       layout: {
         improvedLayout: true,
         hierarchical: {
-          enabled: false,
-          direction: 'DU',
-          sortMethod: 'hubsize'
+          enabled: false
         }
       },
       interaction: { hover: true },
@@ -203,9 +191,11 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
   }
 }
 
-class DetailGraphBuilder extends GraphBuilder<DependencyGraphNode, Edge, DisplayNode<DependencyGraphNode>, DisplayEdge<Edge>> {
+class DetailGraphBuilder
+  extends GraphBuilder<DependencyGraphNode, DependencyGraphEdge, DisplayNode<DependencyGraphNode>, DisplayEdge<DependencyGraphEdge>> {
 
-  constructor(nodes: DependencyGraphNode[], edges: Edge[], nameOfLastPass: string, groupEdges: boolean, showOnlyEnabledPasses: boolean) {
+  constructor(nodes: DependencyGraphNode[], edges: DependencyGraphEdge[], nameOfLastPass: string,
+              groupEdges: boolean, showOnlyEnabledPasses: boolean) {
     super();
     let nodeIdsToRemove = new Set<Number>(nodes.filter(node => showOnlyEnabledPasses && node.enabled === false).map(node => node.id));
     nodes = nodes.filter(node => !nodeIdsToRemove.has(node.id));
@@ -219,32 +209,37 @@ class DetailGraphBuilder extends GraphBuilder<DependencyGraphNode, Edge, Display
     }
   }
 
-  private prepareEdges(edges: Edge[], groupEdges: boolean): Edge[] {
+  private prepareEdges(edges: DependencyGraphEdge[], groupEdges: boolean): DependencyGraphEdge[] {
     if (groupEdges === false) {
       return edges;
     }
 
     // collect edge types for each node pair
     const separator = ';';
-    let edgeMap = new Map<String, Array<String>>();
+    let edgeMap = new Map<String, Array<DependencyGraphEdge>>();
     edges.forEach(edge => {
       const key = edge.from + separator + edge.to;
-      let types: undefined | Array<String> = edgeMap.get(key);
+      let types: undefined | Array<DependencyGraphEdge> = edgeMap.get(key);
       if (types == undefined) {
-        types = new Array<String>();
+        types = new Array<DependencyGraphEdge>();
         edgeMap.set(key, types);
       }
-      types.push(edge.type);
+      types.push(edge);
     });
 
     // create new grouped edges
-    const groupedEdges: Edge[] = [];
+    const groupedEdges: DependencyGraphEdge[] = [];
     for (let [key, value] of edgeMap) {
       const splitKey = key.split(separator);
-      const edge = new Edge();
+      const edge = new DependencyGraphEdge();
       edge.from = Number(splitKey[0]);
       edge.to = Number(splitKey[1]);
-      edge.type = value.sort().join('/');
+      edge.type = value.sort().map(e => e.type).join('/');
+      if (value.length > 1) {
+        edge.edgeType = GraphDependencyEdgeType.Unknown;
+      } else {
+        edge.edgeType = value[0].edgeType;
+      }
       groupedEdges.push(edge);
     }
     return groupedEdges;
@@ -253,26 +248,65 @@ class DetailGraphBuilder extends GraphBuilder<DependencyGraphNode, Edge, Display
   toDisplayNode (node: DependencyGraphNode): DisplayNode<DependencyGraphNode> {
     const result: DisplayNode<DependencyGraphNode> = new DisplayNode<DependencyGraphNode>(node, node.name);
 
-    // set color
     if (!node.enabled) {
-      result.color = '#DCDCDC';
-      result.shapeProperties = {'borderDashes': [5,5]};
-    } else {
-      if (node.pass) {
-        if (node.artifact) {
-          result.color = '#BA55D3';
-        } else {
-          result.color = '#87CEEB';
-        }
-      } else if (node.artifact) {
-        result.color = '#8FBC8F';
-      }
+      result.shapeProperties = { 'borderDashes': [5, 5] };
     }
+    result.setColor(this.getNodeColor(node));
     return result;
   }
 
-  toDisplayEdge (edge: Edge): DisplayEdge<Edge> {
-    const result: DisplayEdge<Edge> = new DisplayEdge<Edge>(edge, edge.type);
+  private getNodeColor(node: DependencyGraphNode): string {
+    if (!node.enabled) {
+      return '#DCDCDC';
+    }
+    if (node.pass) {
+        if (node.artifact) {
+          return '#BA55D3';
+        }
+        return '#87CEEB';
+    }
+    return '#8FBC8F';
+  }
+
+  toDisplayEdge (edge: DependencyGraphEdge): DisplayEdge<DependencyGraphEdge> {
+    const result: DisplayEdge<DependencyGraphEdge> = new DisplayEdge<DependencyGraphEdge>(edge, edge.type);
+    result.setColor(this._getEdgeColor(edge.edgeType));
     return result;
+  }
+  private _getEdgeLabel(edgeType: GraphDependencyEdgeType): string {
+    switch (edgeType) {
+      case GraphDependencyEdgeType.provides:
+        return 'provides';
+      case GraphDependencyEdgeType.modifies:
+        return 'modifies';
+      case GraphDependencyEdgeType.requires:
+        return 'requires';
+      case GraphDependencyEdgeType.scheduleAfter:
+        return 'schedule-after';
+      case GraphDependencyEdgeType.scheduleBefore:
+        return 'schedule-before';
+      case GraphDependencyEdgeType.scheduleImmediateBefore:
+        return 'schedule-imm-before';
+      case GraphDependencyEdgeType.scheduleImmediateAfter:
+        return 'schedule-imm-before';
+      default:
+        return 'unknown';
+    }
+  }
+
+  private _getEdgeColor(edgeType: GraphDependencyEdgeType): string {
+    switch (edgeType) {
+      case GraphDependencyEdgeType.modifies:
+        return '#DC143C';
+      case GraphDependencyEdgeType.scheduleAfter:
+      case GraphDependencyEdgeType.scheduleBefore:
+        return '#66CDAA';
+      case GraphDependencyEdgeType.scheduleImmediateBefore:
+        return '#FF7F50';
+      case GraphDependencyEdgeType.requires:
+      case GraphDependencyEdgeType.provides:
+      default:
+        return '#A9A9A9';
+    }
   }
 }

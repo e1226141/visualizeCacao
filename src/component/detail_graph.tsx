@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Pass, HIRNode, NodeType, Edge, EdgeType, HIRGraphData } from '../data';
+import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
@@ -35,6 +35,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
       width: '100%',
       nodes: {
         shape: 'box',
+        borderWidthSelected: 4
       },
       edges: {
         arrows: {
@@ -47,38 +48,19 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
         },
         smooth: {
           enabled: true,
-          type: 'discrete'
+          type: 'straightCross'
         },
-        chosen: false
+        selectionWidth: 3
       },
       layout: {
-        improvedLayout: true,
         hierarchical: {
-          enabled: false,
-          levelSeparation: 160,
-          nodeSpacing: 200,
-          blockShifting: true,
-          edgeMinimization: false,
-          parentCentralization: true,
-          direction: 'UD',
-          sortMethod: 'directed'
+          enabled: false
         }
       },
       physics: {
-        enabled: false,
-        hierarchicalRepulsion: {
-            centralGravity: 0.10,
-            springLength: 25,
-            springConstant: 0.02,
-            nodeDistance: 220,
-            damping: 0.03
-        },
-        stabilization: {
-            enabled: false,
-            iterations: 100
-        }
+        enabled: false
       }
-    } ;
+    };
     return options as JSON;
   }
 
@@ -200,11 +182,11 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
   }
 }
 
-class DetailGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode>, DisplayEdge<Edge>> {
+class DetailGraphBuilder extends GraphBuilder<HIRNode, HIREdge, DisplayNode<HIRNode>, DisplayEdge<HIREdge>> {
   private selectedNode: number;
   private showAdjacentNodeDistance: number;
 
-  constructor(nodes: HIRNode[], edges: Edge[], pSelectedNode: number, pShowAdjacentNodeDistance: number) {
+  constructor(nodes: HIRNode[], edges: HIREdge[], pSelectedNode: number, pShowAdjacentNodeDistance: number) {
     super();
     this.selectedNode = pSelectedNode;
     this.showAdjacentNodeDistance = pShowAdjacentNodeDistance;
@@ -219,10 +201,10 @@ class DetailGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode
 
  toJSONGraphLegend (): JSON {
     const nodes = [
-      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
-      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(NodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
-      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(NodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
-      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(NodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
+      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
+      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(HIRNodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
+      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
+      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
     ];
     const edges = [
       {from: 1, to: 2, color: {color: '#87B2EC'}},
@@ -239,27 +221,28 @@ class DetailGraphBuilder extends GraphBuilder<HIRNode, Edge, DisplayNode<HIRNode
 
   protected toDisplayNode (node: HIRNode): DisplayNode<HIRNode> {
     const result: DisplayNode<HIRNode> = new DisplayNode<HIRNode>(node, node.name);
-    result.color = this.getNodeBackgroundColor(node.nodeType);
+    const color = this.getNodeBackgroundColor(node.nodeType);
+    result.setColor(color);
     return result;
   }
 
-  protected toDisplayEdge (edge: Edge): DisplayEdge<Edge> {
-    const result: DisplayEdge<Edge> = new DisplayEdge<Edge>(edge, edge.type);
-    if (edge.edgeType == EdgeType.bb) {
+  protected toDisplayEdge (edge: HIREdge): DisplayEdge<HIREdge> {
+    const result: DisplayEdge<HIREdge> = new DisplayEdge<HIREdge>(edge, edge.type);
+    if (edge.edgeType == HIREdgeType.bb) {
       result.dashes = true;
     }
     return result;
   }
 
-  private getNodeBackgroundColor(nodeType: NodeType): string {
+  private getNodeBackgroundColor(nodeType: HIRNodeType): string {
     switch (nodeType) {
-      case NodeType.IFInst:
+      case HIRNodeType.IFInst:
           return '#A1EC76';
-      case NodeType.RETURNInst:
+      case HIRNodeType.RETURNInst:
           return '#FFA807';
-      case NodeType.GOTOInst:
+      case HIRNodeType.GOTOInst:
           return '#97C2FC';
-      case NodeType.PHIInst:
+      case HIRNodeType.PHIInst:
           return '#FFCA66';
       default:
           return '#97C2FC';
