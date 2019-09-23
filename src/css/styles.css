@@ -51,3 +51,29 @@
 .visNetwork {
     background-color: '#f7f9ef';
 }
+
+.machine-instruction {}
+
+.machine-instruction-basic-block {
+    font-weight: bold;
+    text-decoration: underline;
+    margin-top: 20px;
+}
+
+.machine-instruction-name {
+    font-weight: bold;
+    padding-left: 20px;
+}
+
+.machine-instruction-operands {
+    font-style: italic;
+    margin-left: 10px;
+}
+
+.machine-instruction-result {
+    font-style: italic;
+}
+
+.machine-instruction-successor {
+    margin-left: 10px;
+}
