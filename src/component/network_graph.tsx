@@ -25,9 +25,9 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   constructor(props: INetworkGraphProps) {
     super(props);
     this.state = { 'identifier': uuid() };
+    this._elk = new ELK();
     this.createGraph = this.createGraph.bind(this);
     this.computeCoordinates = this.computeCoordinates.bind(this);
-    this._elk = new ELK();
   }
 
   componentDidMount() {
@@ -48,8 +48,20 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     }
     this._edges = new DataSet(this.props.graph.edges);
     this._nodes = new DataSet(this.props.graph.nodes);
-    this.computeCoordinates(this.props);
 
+    this.computeCoordinates(() => { this.initializeGraph(); } );
+    console.log('after computeCoordinates');
+  }
+
+  private initializeGraph() {
+    console.log('initializeGraph');
+    let identifier = this.state.identifier || '';
+    let container = document.getElementById(identifier);
+    if (!container) {
+      return;
+    }
+
+    container.style.height = '90vh';
     this._network = new Network(container, {
       'edges': this._edges,
       'nodes': this._nodes
@@ -85,12 +97,12 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       if (changedEdges && nextProps.graph.edges && this._edges) {
         this._edges.add(nextProps.graph.edges);
       }
-      this.computeCoordinates(nextProps);
+      this.computeCoordinates(() => {} );
     }
     return false;
   }
 
-  private computeCoordinates(props: INetworkGraphProps) {
+  private computeCoordinates(f: Function): Promise<any> {
     let elkGraph: any = {
       id: 'root',
       layoutOptions: {
@@ -100,7 +112,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         'elk.layered.feedbackEdges': true,
         'elk.layered.wrapping.multiEdge.improveCuts': true,
         //'elk.layered.compaction.postCompaction.constraints': 'QUADRATIC',
-        'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
+        'elk.layered.nodePlacement.strategy': 'LINEAR_SEGMENTS',
         //'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
         'elk.layered.wrapping.additionalEdgeSpacing': 10,
         //'elk.edgeLabels.inline': true,
@@ -117,35 +129,40 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
 
     // console.log(JSON.stringify(elkGraph));
 
-    let result = this._elk.layout(elkGraph)
-      .then((g: any) => {
-        let myUpdateSet: any = [];
-        let elkNodes = g.children;
-        // console.log('elkNodes: ' + elkNodes.length);
-        elkNodes.forEach((n: any) => {
-          myUpdateSet.push({id: n.id, x: n.x, y: n.y});
-          if (n.children) {
-            // console.log('elkNodes-childs: ' + n.children.length);
-            n.children.forEach((cn: any) => {
-              myUpdateSet.push({id: cn.id, x: cn.x, y: cn.y});
-            });
+    return this._elk.layout(elkGraph)
+        .then((g: any) => {
+          let myUpdateSet: any = [];
+          let elkNodes = g.children;
+          // console.log('elkNodes: ' + elkNodes.length);
+          elkNodes.forEach((n: any) => {
+            myUpdateSet.push({id: n.id, x: n.x, y: n.y});
+            if (n.children) {
+              // console.log('elkNodes-childs: ' + n.children.length);
+              n.children.forEach((cn: any) => {
+                myUpdateSet.push({id: cn.id, x: cn.x, y: cn.y});
+              });
+            }
+          });
+          // console.log('updateSet: ' + myUpdateSet.length);
+          //console.log(myUpdateSet);
+          this._nodes.update(myUpdateSet);
+
+          f();
+
+          if (this._firstCall) {
+            this._network.fit();
+            this._firstCall = false;
           }
-        });
-        // console.log('updateSet: ' + myUpdateSet.length);
-        //console.log(myUpdateSet);
-        this._nodes.update(myUpdateSet);
-        if (this._firstCall) {
-          this._network.fit();
-          this._firstCall = false;
-        }
-    })
-    .catch(console.error);
+
+      });
   }
 
   private mapToNode(n: Node): { id: string | number | undefined; width: number; height: number; } {
     let x = 200;
     let y = 45;
     const label = n.label;
+
+    // increase size depending on length of node label
     if (label) {
       const lines =  label.split('\n');
       y = 20 + 25 * lines.length;

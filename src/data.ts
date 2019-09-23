@@ -149,7 +149,6 @@ export class DependencyGraphEdge implements Serializable<DependencyGraphEdge>, B
     this.to = input.to;
     this.type = input.type;
     this.edgeType = this.mapGraphDependencEdgeType(input.type);
-    console.log('edgeType: ' + this.edgeType);
     return this;
   }
 

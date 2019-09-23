@@ -99,7 +99,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
             </Segment>
           </Segment.Group>
           <div id='detailNetwork'>
-            <div className='vis-network' width='100%'>
+            <div className='vis-network'>
               <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
                 getVisNetwork={ (network) => { this._detailNetwork = network; } } />
             </div>
