@@ -13,6 +13,7 @@ export interface INetworkGraphProps {
 
 export interface INetworkGraphState {
   identifier?: string;
+   highlightActive: boolean;
 }
 
 export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGraphState> {
@@ -24,7 +25,10 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
 
   constructor(props: INetworkGraphProps) {
     super(props);
-    this.state = { 'identifier': uuid() };
+    this.state = {
+      'identifier': uuid(),
+      'highlightActive': false
+    };
     this._elk = new ELK();
     this.createGraph = this.createGraph.bind(this);
     this.computeCoordinates = this.computeCoordinates.bind(this);
@@ -62,10 +66,11 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     }
 
     container.style.height = '90vh';
-    this._network = new Network(container, {
+    const graphContent = {
       'edges': this._edges,
       'nodes': this._nodes
-    }, this.props.options);
+    };
+    this._network = new Network(container, graphContent, this.props.options);
 
     let events = this.props.events;
     if (events) {
@@ -76,6 +81,42 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
+
+    const networkRef = this._network;
+    let highlightActive = this.state.highlightActive;
+    const allNodes = this._nodes.get({returnType: 'Object'});
+
+    this._network.on('doubleClick', function (params) {
+      if (params.nodes.length > 0) {
+        highlightActive = true;
+        const selectedNode = params.nodes[0];
+
+        // hide all nodes and reset those which should stay visible
+        for (let nodeId in allNodes) {
+          allNodes[nodeId].hidden = true;
+        }
+        let connectedNodes = networkRef.getConnectedNodes(selectedNode);
+        for (let j = 0; j < connectedNodes.length; j++) {
+          allNodes[connectedNodes[j]].hidden = false;
+        }
+        // the main node gets its own color and its label back.
+        allNodes[selectedNode].hidden = false;
+
+      // show all nodes
+      } else if (highlightActive === true) {
+        for (let nodeId in allNodes) {
+          allNodes[nodeId].hidden = false;
+        }
+        highlightActive = false;
+      }
+
+      // transform the object into an array
+      const updateArray = [];
+      for (let nodeId in allNodes) {
+          updateArray.push(allNodes[nodeId]);
+      }
+      graphContent.nodes.update(updateArray);
+    });
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {
@@ -102,7 +143,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     return false;
   }
 
-  private computeCoordinates(f: Function): Promise<any> {
+  private computeCoordinates(initializeGraphFunction: Function): Promise<any> {
     let elkGraph: any = {
       id: 'root',
       layoutOptions: {
@@ -111,23 +152,16 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         'elk.layered.cycleBreaking.strategy': 'DEPTH_FIRST',
         'elk.layered.feedbackEdges': true,
         'elk.layered.wrapping.multiEdge.improveCuts': true,
-        //'elk.layered.compaction.postCompaction.constraints': 'QUADRATIC',
         'elk.layered.nodePlacement.strategy': 'LINEAR_SEGMENTS',
-        //'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
         'elk.layered.wrapping.additionalEdgeSpacing': 10,
-        //'elk.edgeLabels.inline': true,
         'elk.padding': '[top=10,left=20,bottom=10,right=20]',
         'elk.layered.spacing.nodeNodeBetweenLayers': 70,
         'elk.layered.spacing.edgeEdgeBetweenLayers': 20,
-        'elk.edgeRouting': 'SPLINE',
-        //'elk.layered.highDegreeNodes.treatment': true,
-        //'org.eclipse.elk.interactive': false
+        'elk.edgeRouting': 'SPLINE'
       },
       children: JSON.parse(JSON.stringify(this._nodes.map(n => this.mapToNode(n)))),
       edges: JSON.parse(JSON.stringify(this._edges.get().map(e => this.mapToEdge(e))))
     };
-
-    // console.log(JSON.stringify(elkGraph));
 
     return this._elk.layout(elkGraph)
         .then((g: any) => {
@@ -147,13 +181,12 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
           //console.log(myUpdateSet);
           this._nodes.update(myUpdateSet);
 
-          f();
+          initializeGraphFunction();
 
           if (this._firstCall) {
             this._network.fit();
             this._firstCall = false;
           }
-
       });
   }
 
