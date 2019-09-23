@@ -15,6 +15,10 @@ export interface IPassDependencyState {
   showLegend: boolean;
   groupEdges: boolean;
   showOnlyEnabledPasses: boolean;
+  hideRequireEdges: boolean;
+  hideProvideEdges: boolean;
+  hideModifyEdges: boolean;
+  hideScheduleEdges: boolean;
 }
 
 export class PassDependencyGraph extends React.Component<IPassDependencyProps, IPassDependencyState> {
@@ -25,16 +29,32 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
     this.state = {
       showLegend: false,
       groupEdges: true,
-      showOnlyEnabledPasses: true
+      showOnlyEnabledPasses: true,
+      hideRequireEdges: false,
+      hideProvideEdges: true,
+      hideModifyEdges: false,
+      hideScheduleEdges: false
     };
 
     this._toggleShowOnlyEnabledPasses = this._toggleShowOnlyEnabledPasses.bind(this);
+    this._toggleHideRequireEdges = this._toggleHideRequireEdges.bind(this);
+    this._toggleHideProvideEdges = this._toggleHideProvideEdges.bind(this);
+    this._toggleHideModifyEdges = this._toggleHideModifyEdges.bind(this);
+    this._toggleHideScheduleEdges = this._toggleHideScheduleEdges.bind(this);
     this._onShowLegend = this._onShowLegend.bind(this);
     this._onHideLegend = this._onHideLegend.bind(this);
   }
 
   private _toggleShowOnlyEnabledPasses =
     () => this.setState((prevState) => ({ ...prevState, showOnlyEnabledPasses: !prevState.showOnlyEnabledPasses }))
+  private _toggleHideRequireEdges =
+    () => this.setState((prevState) => ({ ...prevState, hideRequireEdges: !prevState.hideRequireEdges }))
+  private _toggleHideProvideEdges =
+    () => this.setState((prevState) => ({ ...prevState, hideProvideEdges: !prevState.hideProvideEdges }))
+  private _toggleHideModifyEdges =
+    () => this.setState((prevState) => ({ ...prevState, hideModifyEdges: !prevState.hideModifyEdges }))
+  private _toggleHideScheduleEdges =
+    () => this.setState((prevState) => ({ ...prevState, hideScheduleEdges: !prevState.hideScheduleEdges }))
   private _onShowLegend = () => this.setState( (prevState) => ({...prevState, showLegend: !this.state.showLegend }));
   private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
 
@@ -48,8 +68,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       passDependencyGraph.nodes,
       passDependencyGraph.edges,
       lastPass.name,
-      this.state.groupEdges,
-      this.state.showOnlyEnabledPasses
+      this.state
     );
     const graph: JSON = graphBuilder.toJSONGraph();
     const legend: JSON = graphBuilder.toJSONGraphLegend();
@@ -85,8 +104,20 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
                     content='displays the legend of the detail network graph'/>
                   <Popup trigger={<Checkbox label='only enabled passes'
                     checked={this.state.showOnlyEnabledPasses} onClick={() => this._toggleShowOnlyEnabledPasses()}
-                    style={{paddingRight: '20px'}}/>} content='hides all passes have not been enabled' style={{paddingRight: '20px'}}
-                  />
+                    style={{paddingRight: '20px'}}/>} content='hides all passes have not been enabled' style={{paddingRight: '20px'}}/>
+                  <Popup trigger={<Checkbox label='hide requires'
+                    checked={this.state.hideRequireEdges} onClick={() => this._toggleHideRequireEdges()}
+                    style={{paddingRight: '20px'}}/>} content='hides all "require" edges' style={{paddingRight: '20px'}}/>
+                  <Popup trigger={<Checkbox label='hide provide'
+                    checked={this.state.hideProvideEdges} onClick={() => this._toggleHideProvideEdges()}
+                    style={{paddingRight: '20px'}}/>} content='hides all "provide" edges' style={{paddingRight: '20px'}}/>
+                  <Popup trigger={<Checkbox label='hide modifies'
+                    checked={this.state.hideModifyEdges} onClick={() => this._toggleHideModifyEdges()}
+                    style={{paddingRight: '20px'}}/>} content='hides all "modifies" edges' style={{paddingRight: '20px'}}/>
+                  <Popup trigger={<Checkbox label='hide schedule'
+                    checked={this.state.hideScheduleEdges} onClick={() => this._toggleHideScheduleEdges()}
+                    style={{paddingRight: '20px'}}/>} content='hides all "schedule*" edges' style={{paddingRight: '20px'}}/>
+
               </Segment.Inline>
             </Segment>
             <Segment floated='right' compact size='mini'>
@@ -194,14 +225,20 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
 class DetailGraphBuilder
   extends GraphBuilder<DependencyGraphNode, DependencyGraphEdge, DisplayNode<DependencyGraphNode>, DisplayEdge<DependencyGraphEdge>> {
 
-  constructor(nodes: DependencyGraphNode[], edges: DependencyGraphEdge[], nameOfLastPass: string,
-              groupEdges: boolean, showOnlyEnabledPasses: boolean) {
+  constructor(nodes: DependencyGraphNode[], edges: DependencyGraphEdge[], nameOfLastPass: string, state: IPassDependencyState) {
     super();
-    let nodeIdsToRemove = new Set<Number>(nodes.filter(node => showOnlyEnabledPasses && node.enabled === false).map(node => node.id));
+    let nodeIdsToRemove = new Set<Number>(nodes.filter(node => state.showOnlyEnabledPasses && node.enabled === false).map(node => node.id));
+    edges = edges.filter(edge => !state.hideRequireEdges || edge.edgeType != GraphDependencyEdgeType.requires);
+    edges = edges.filter(edge => !state.hideProvideEdges || edge.edgeType != GraphDependencyEdgeType.provides);
+    edges = edges.filter(edge => !state.hideModifyEdges || edge.edgeType != GraphDependencyEdgeType.modifies);
+    edges = edges.filter(edge => !state.hideScheduleEdges ||
+      (edge.edgeType != GraphDependencyEdgeType.scheduleAfter && edge.edgeType != GraphDependencyEdgeType.scheduleBefore
+        && edge.edgeType != GraphDependencyEdgeType.scheduleImmediateAfter && edge.edgeType != GraphDependencyEdgeType.scheduleImmediateBefore));
+
     nodes = nodes.filter(node => !nodeIdsToRemove.has(node.id));
     edges = edges.filter(edge => !nodeIdsToRemove.has(edge.from)).filter(edge => !nodeIdsToRemove.has(edge.to));
 
-    this.init(nodes, this.prepareEdges(edges, groupEdges));
+    this.init(nodes, this.prepareEdges(edges, state.groupEdges));
 
     const root = this.nodes.find(node => node.name == nameOfLastPass);
     if (!root) {
