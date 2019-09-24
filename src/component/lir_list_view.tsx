@@ -91,20 +91,6 @@ export class LirListView extends React.Component<ILirListViewProps, {}> {
     return (pad + value).slice(-pad.length);
   }
 
-  private instructionToString = (instruction: MachineInstruction, maxPadding: number): string => {
-    let result = this.leftPad(instruction.id, maxPadding) + ': ' + instruction.name + '';
-    if (instruction.operands != null && instruction.operands.length > 0) {
-      result += ' ' + instruction.operands;
-    }
-    if (instruction.result != null && instruction.result != '') {
-      result += ' -> ' + instruction.result;
-    }
-    if (instruction.successors != null && instruction.successors.length > 0) {
-      result += ' ' + instruction.successors;
-    }
-    return result;
-  }
-
   removeMBBFromString(successor: string): string {
     const index = successor.indexOf('=');
     if (index == -1) {

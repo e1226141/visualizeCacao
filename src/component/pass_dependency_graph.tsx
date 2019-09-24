@@ -31,7 +31,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       groupEdges: true,
       showOnlyEnabledPasses: true,
       hideRequireEdges: false,
-      hideProvideEdges: true,
+      hideProvideEdges: false,
       hideModifyEdges: false,
       hideScheduleEdges: false
     };

@@ -21,7 +21,6 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   private _nodes: DataSet<Node>;
   private _network: Network;
   private _elk: ELK;
-  private _firstCall = true;
 
   constructor(props: INetworkGraphProps) {
     super(props);
@@ -53,8 +52,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this._edges = new DataSet(this.props.graph.edges);
     this._nodes = new DataSet(this.props.graph.nodes);
 
-    this.computeCoordinates(() => { this.initializeGraph(); } );
-    console.log('after computeCoordinates');
+    this.computeCoordinates(() => { this.initializeGraph(); }, true);
   }
 
   private initializeGraph() {
@@ -85,6 +83,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     const networkRef = this._network;
     let highlightActive = this.state.highlightActive;
     const allNodes = this._nodes.get({returnType: 'Object'});
+    let _this = this;
 
     this._network.on('doubleClick', function (params) {
       if (params.nodes.length > 0) {
@@ -116,6 +115,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
           updateArray.push(allNodes[nodeId]);
       }
       graphContent.nodes.update(updateArray);
+      _this.computeCoordinates(() => {}, true);
     });
   }
 
@@ -138,12 +138,25 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       if (changedEdges && nextProps.graph.edges && this._edges) {
         this._edges.add(nextProps.graph.edges);
       }
-      this.computeCoordinates(() => {} );
+      this.computeCoordinates(() => {}, false);
     }
     return false;
   }
 
-  private computeCoordinates(initializeGraphFunction: Function): Promise<any> {
+  private computeCoordinates(initializeGraphFunction: Function, fitNetwork: boolean): Promise<any> {
+    let nodes = this._nodes.get({
+      filter: function (item) {
+        return item.hidden != true;
+      }
+    });
+    const remainingNodes = new Set<string>();
+    nodes.filter(n => n.id != undefined).forEach(n => remainingNodes.add(n.id) );
+
+    let edges = this._edges.get({
+      filter: function (item) {
+        return remainingNodes.has(item.from) && remainingNodes.has(item.to);
+      }
+    });
     let elkGraph: any = {
       id: 'root',
       layoutOptions: {
@@ -159,8 +172,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         'elk.layered.spacing.edgeEdgeBetweenLayers': 20,
         'elk.edgeRouting': 'SPLINE'
       },
-      children: JSON.parse(JSON.stringify(this._nodes.map(n => this.mapToNode(n)))),
-      edges: JSON.parse(JSON.stringify(this._edges.get().map(e => this.mapToEdge(e))))
+      children: JSON.parse(JSON.stringify(nodes.map(n => this.mapToNode(n)))),
+      edges: JSON.parse(JSON.stringify(edges.map(e => this.mapToEdge(e))))
     };
 
     return this._elk.layout(elkGraph)
@@ -183,9 +196,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
 
           initializeGraphFunction();
 
-          if (this._firstCall) {
+          if (fitNetwork) {
             this._network.fit();
-            this._firstCall = false;
           }
       });
   }
