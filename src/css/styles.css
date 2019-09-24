@@ -77,3 +77,12 @@
 .machine-instruction-successor {
     margin-left: 10px;
 }
+
+.selection-checkbox {
+    paddingRight: '20px'
+}
+
+.node-search-box {
+    paddingRight: '20px';
+    width: '100%';
+}

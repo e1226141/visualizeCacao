@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { OptimizedMethod, Pass, HIRGraphData, HIRNode } from '../data';
-import { ControlFlow } from './control_flow';
-import { DetailGraph } from './detail_graph';
+import { OptimizedMethod, Pass, HIRGraphData } from '../data';
+import { ControlFlow } from './hir_control_flow';
+import { DetailGraph } from './hir_detail_graph';
 import { PassList } from './passlist';
 import { Button, Icon } from 'semantic-ui-react';
 import SplitterLayout from 'react-splitter-layout';

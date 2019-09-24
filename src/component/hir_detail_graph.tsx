@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
-import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
+import { HirGraphBuilder } from './hir_base';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
-import { Segment, Statistic, Popup, Portal, Grid, Message, Icon } from 'semantic-ui-react';
+import { Segment, Statistic, Popup, Portal, Grid, Message, Icon, Checkbox} from 'semantic-ui-react';
 
 export interface IDetailGraphProps {
   pass: Pass;
@@ -15,6 +15,7 @@ export interface IDetailGraphProps {
 export interface IDetailGraphState {
   showLegend: boolean;
   selectedNode: number;
+  hideSourceStates: boolean;
 }
 
 export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraphState> {
@@ -24,9 +25,15 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
     super(props);
     this.state = {
       showLegend: false,
-      selectedNode: -1
+      selectedNode: -1,
+      hideSourceStates: true
     };
+
+    this._toggleHideSourceStates = this._toggleHideSourceStates.bind(this);
   }
+
+  private _toggleHideSourceStates =
+    () => this.setState((prevState) => ({ ...prevState, hideSourceStates: !prevState.hideSourceStates }))
 
   private _getDefaultOptions(): JSON {
     let options: any = {
@@ -102,8 +109,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
     const graphBuilder = new DetailGraphBuilder(
       hir.nodes,
       hir.edges,
-      this.state.selectedNode,
-      this.props.showAdjacentNodeDistance
+      this.state.hideSourceStates
     );
 
     const graph: JSON = graphBuilder.toJSONGraph();
@@ -136,6 +142,9 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
               <div>
                 <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
                   content='displays the legend of the detail network graph'/>
+                <Popup trigger={<Checkbox label='hide source state'
+                    checked={this.state.hideSourceStates} onClick={() => this._toggleHideSourceStates()}
+                    className='selection-checkbox'/>} content='hides all source state instructions' className='selection-checkbox'/>
               </div>
               <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} style={{paddingRight: '20px', width: '100%'}} />
           </Segment>
@@ -182,29 +191,26 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
   }
 }
 
-class DetailGraphBuilder extends GraphBuilder<HIRNode, HIREdge, DisplayNode<HIRNode>, DisplayEdge<HIREdge>> {
-  private selectedNode: number;
-  private showAdjacentNodeDistance: number;
+class DetailGraphBuilder extends HirGraphBuilder {
 
-  constructor(nodes: HIRNode[], edges: HIREdge[], pSelectedNode: number, pShowAdjacentNodeDistance: number) {
+  constructor(nodes: HIRNode[], edges: HIREdge[], hideSourceStates: boolean) {
     super();
-    this.selectedNode = pSelectedNode;
-    this.showAdjacentNodeDistance = pShowAdjacentNodeDistance;
-    this.init(nodes, edges);
 
-    // TODO const root = this.findRoot();
-    // TODO this.markBackedges(root, e => e.edgeType !== EdgeType.op, new Set<number>());
-    // TODO this.edges = this.edges.filter((e: DisplayEdge) => e.edgeType != EdgeType.sched);
-    // TODO this.edges.filter( (e: DisplayEdge) => e.backedge).forEach( (e: DisplayEdge) => { e.color = {color: '#EE0000'}; });
-    // this.setHierarchy(root, (e) => e.edgeType == EdgeType.cfg || e.edgeType == EdgeType.sched || e.edgeType == EdgeType.bb);
+    let nodeIdsToRemove = new Set<Number>(
+      nodes.filter(node => hideSourceStates && node.nodeType == HIRNodeType.SourceStateInst).map(node => node.id));
+
+    nodes = nodes.filter(node => !nodeIdsToRemove.has(node.id));
+    edges = edges.filter(edge => !nodeIdsToRemove.has(edge.from)).filter(edge => !nodeIdsToRemove.has(edge.to));
+
+    this.init(nodes, edges);
   }
 
  toJSONGraphLegend (): JSON {
     const nodes = [
-      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst), title: 'basic block with "GOTO" as EndInst'},
-      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(HIRNodeType.IFInst), title: 'basic block with an "IF" as EndInst'},
-      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst), title: 'basic block with an "GOTO" as EndInst'},
-      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.RETURNInst), title: 'basic block with an "RETURN" as EndInst'}
+      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst, false), title: 'basic block with "GOTO" as EndInst'},
+      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(HIRNodeType.IFInst, false), title: 'basic block with an "IF" as EndInst'},
+      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst, false), title: 'basic block with an "GOTO" as EndInst'},
+      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.RETURNInst, false), title: 'basic block with an "RETURN" as EndInst'}
     ];
     const edges = [
       {from: 1, to: 2, color: {color: '#87B2EC'}},
@@ -217,35 +223,5 @@ class DetailGraphBuilder extends GraphBuilder<HIRNode, HIREdge, DisplayNode<HIRN
       'edges': JSON.parse(JSON.stringify(edges))
     };
     return graph as JSON;
-  }
-
-  protected toDisplayNode (node: HIRNode): DisplayNode<HIRNode> {
-    const result: DisplayNode<HIRNode> = new DisplayNode<HIRNode>(node, node.name);
-    const color = this.getNodeBackgroundColor(node.nodeType);
-    result.setColor(color);
-    return result;
-  }
-
-  protected toDisplayEdge (edge: HIREdge): DisplayEdge<HIREdge> {
-    const result: DisplayEdge<HIREdge> = new DisplayEdge<HIREdge>(edge, edge.type);
-    if (edge.edgeType == HIREdgeType.bb) {
-      result.dashes = true;
-    }
-    return result;
-  }
-
-  private getNodeBackgroundColor(nodeType: HIRNodeType): string {
-    switch (nodeType) {
-      case HIRNodeType.IFInst:
-          return '#A1EC76';
-      case HIRNodeType.RETURNInst:
-          return '#FFA807';
-      case HIRNodeType.GOTOInst:
-          return '#97C2FC';
-      case HIRNodeType.PHIInst:
-          return '#FFCA66';
-      default:
-          return '#97C2FC';
-    }
   }
 }
