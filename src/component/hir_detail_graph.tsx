@@ -42,6 +42,11 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
       width: '100%',
       nodes: {
         shape: 'box',
+        font: {
+          face: 'monospace',
+          align: 'left',
+          multi: 'html'
+        },
         borderWidthSelected: 4
       },
       edges: {
@@ -198,14 +203,64 @@ class DetailGraphBuilder extends HirGraphBuilder {
 
     let nodeIdsToRemove = new Set<Number>(
       nodes.filter(node => hideSourceStates && node.nodeType == HIRNodeType.SourceStateInst).map(node => node.id));
-
-    nodes = nodes.filter(node => !nodeIdsToRemove.has(node.id));
-    edges = edges.filter(edge => !nodeIdsToRemove.has(edge.from)).filter(edge => !nodeIdsToRemove.has(edge.to));
-
+    if (nodeIdsToRemove.size > 0) {
+      nodes = nodes.filter(node => !nodeIdsToRemove.has(node.id));
+      edges = edges.filter(edge => !nodeIdsToRemove.has(edge.from)).filter(edge => !nodeIdsToRemove.has(edge.to));
+    }
     this.init(nodes, edges);
   }
 
- toJSONGraphLegend (): JSON {
+  protected toDisplayNode(node: HIRNode): DisplayNode<HIRNode> {
+    let result = super.toDisplayNode(node);
+    // floating instruction will be displayed with borderDashes
+    if (!node.BB) {
+      result.shapeProperties = { 'borderDashes': [5, 5] };
+    }
+    return result;
+  }
+
+  protected getNodeLabel(node: HIRNode, simpleDisplay: boolean): string {
+    const primaryLableText = super.getNodeLabel(node, simpleDisplay);
+    const type = this.getNodeDisplayType(node.type);
+    let htmlElement =
+    '<b>' + primaryLableText + '</b>\n\n'
+      +  '<i>' + type + '</i>'
+       + (node.BB
+        ? this._getSpacing(primaryLableText.length, type.length + (('BB ' + node.BB).length)) + '<i>BB ' + node.BB + '</i>'
+        : '');
+    return htmlElement;
+  }
+
+  getNodeDisplayType(type: string): any {
+    return type.replace('TypeID', '');
+  }
+
+  private _getSpacing(primaryLabelLength: number, secondaryLabelLength: number): string {
+    let nonBreakableSpaces = '';
+    if (secondaryLabelLength >= primaryLabelLength) {
+      primaryLabelLength = secondaryLabelLength + 3;
+    }
+    for (let i = secondaryLabelLength; i < primaryLabelLength; i++) {
+      nonBreakableSpaces += ' '; // special invisible char (alt + 255)
+    }
+    return nonBreakableSpaces;
+  }
+
+  protected getEdgeLabel(edge: HIREdge): string {
+    if (edge.edgeType == HIREdgeType.cfg && edge.trueBranch != undefined) {
+      return edge.trueBranch ? 'T' : 'F';
+    }
+
+    switch (edge.edgeType) {
+      case HIREdgeType.bb: return 'bb';
+      case HIREdgeType.op: return 'op';
+      case HIREdgeType.sched: return 'sched';
+      case HIREdgeType.cfg: return 'cfg';
+      default: return 'unknown';
+    }
+  }
+
+  toJSONGraphLegend (): JSON {
     const nodes = [
       {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst, false), title: 'basic block with "GOTO" as EndInst'},
       {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(HIRNodeType.IFInst, false), title: 'basic block with an "IF" as EndInst'},

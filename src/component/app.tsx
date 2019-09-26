@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { HIR } from './hir';
 import { LIRView } from './lir_view';
-import { OptimizedMethod, HIRGraphData } from '../data';
+import { OptimizedMethod } from '../data';
 import { PassDependencyGraph } from './pass_dependency_graph';
 import { PassStatistics } from './pass_statistics';
 import { Navigation, PageType } from './navigation';
 import SplitterLayout from 'react-splitter-layout';
+import { Util } from './util';
 
 export interface AppProps {
   optimizedMethod: OptimizedMethod;
@@ -28,8 +29,8 @@ export class App extends React.Component<AppProps, AppState> {
 
   render() {
     if (this.showContainedTypes) {
-      this.listNodeNames();
-      this.listEdgeTypes();
+      Util.listNodeNames(this.props.optimizedMethod.passes);
+      Util.listEdgeTypes(this.props.optimizedMethod.passes);
     }
     let content;
     switch (this.state.pageType) {
@@ -43,8 +44,7 @@ export class App extends React.Component<AppProps, AppState> {
         content = <LIRView optimizedMethod={this.props.optimizedMethod} />;
         break;
       case PageType.PASS_DEPENDENCY:
-        content = <PassDependencyGraph networkGraphStyle={{ height: '1024px' }}
-          optimizedMethod={this.props.optimizedMethod} />;
+        content = <PassDependencyGraph optimizedMethod={this.props.optimizedMethod} />;
         break;
       default: content = (<div>unknown or unsupported page type: {this.state.pageType} </div>);
     }
@@ -61,33 +61,5 @@ export class App extends React.Component<AppProps, AppState> {
     if (this.state.pageType != newPageType) {
       this.setState((prevState) => ({ ...prevState, pageType: newPageType }));
     }
-  }
-
-  // helper method which lists all unique node names to create an enum
-  private listNodeNames(): void {
-    console.log('listNodeNames:');
-    const nodeNameSet = new Set();
-    nodeNameSet.add('Unknown');
-    this.props.optimizedMethod.passes.forEach(pass => {
-      const hir: HIRGraphData | undefined = pass.hir;
-      if (hir) {
-        hir.nodes.forEach(node => nodeNameSet.add(node.name));
-      }
-    });
-    console.log(Array.from(nodeNameSet).sort().join(',\n'));
-  }
-
-  // helper method which lists all unique edge types to create an enum
-  private listEdgeTypes(): void {
-    console.log('listEdgeTypes:');
-    const edgeTypeSet = new Set();
-    edgeTypeSet.add('Unknown');
-    this.props.optimizedMethod.passes.forEach(pass => {
-      const hir: HIRGraphData | undefined = pass.hir;
-      if (hir) {
-        hir.edges.forEach(edge => edgeTypeSet.add(edge.type));
-      }
-    });
-    console.log(Array.from(edgeTypeSet).sort().join(',\n'));
   }
 }

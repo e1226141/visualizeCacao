@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Network, DataSet, Node, Edge, NetworkEvents } from 'vis';
+import { Network, DataSet, Node, Edge, NetworkEvents, IdType } from 'vis';
 import *  as ELK from 'elkjs';
 import { v4 as uuid } from 'uuid';
 
@@ -94,12 +94,17 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         for (let nodeId in allNodes) {
           allNodes[nodeId].hidden = true;
         }
-        let connectedNodes = networkRef.getConnectedNodes(selectedNode);
+        let connectedNodes: IdType[] | Array<{ fromId: IdType, toId: IdType }> = networkRef.getConnectedNodes(selectedNode);
         for (let j = 0; j < connectedNodes.length; j++) {
-          allNodes[connectedNodes[j]].hidden = false;
+          const node = allNodes[connectedNodes[j]];
+          if (node) {
+            node.hidden = false;
+          }
         }
-        // the main node gets its own color and its label back.
-        allNodes[selectedNode].hidden = false;
+        const mainNode = allNodes[selectedNode];
+        if (mainNode) {
+          mainNode.hidden = false;
+        }
 
       // show all nodes
       } else if (highlightActive === true) {
@@ -130,6 +135,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         this._edges.clear();
       }
       if (changedNodes && this._nodes) {
+        console.log('nodes cleared');
         this._nodes.clear();
         if (nextProps.graph.nodes) {
           this._nodes.add(nextProps.graph.nodes);

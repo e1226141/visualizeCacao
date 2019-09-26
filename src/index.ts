@@ -121,10 +121,8 @@ function readMissingBrackets(data: string): string {
     }
   }
   let missingBrackets = '';
-  console.log('array length: ' + bracketsStack.length);
   while (bracketsStack.length > 0) {
     let missingBracket = bracketsStack.pop() as string;
-    console.log('missing bracket: ' + missingBracket);
     missingBrackets += getMatchingBracket(missingBracket);
   }
   return missingBrackets;

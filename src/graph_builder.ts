@@ -15,12 +15,14 @@ export class DisplayNode<IN_N extends BaseNode> {
     endInstLink?: number;
     level?: number;
     shapeProperties?: JSON;
+    hidden: boolean;
 
     constructor(pNode: IN_N, label: string) {
         this._node = pNode;
         this.id = pNode.id;
         this.name = pNode.name;
         this.label = label;
+        this.hidden = false;
     }
 
     public setColor(color: string) {

@@ -1,12 +1,11 @@
-import * as React from 'react';
-import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
+import { HIRNode, HIRNodeType, HIREdge, HIREdgeType } from '../data';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 
 export abstract class HirGraphBuilder extends GraphBuilder<HIRNode, HIREdge, DisplayNode<HIRNode>, DisplayEdge<HIREdge>> {
 
     protected toDisplayNode(node: HIRNode): DisplayNode<HIRNode> {
         const result: DisplayNode<HIRNode> = new DisplayNode<HIRNode>(node, this.getNodeLabel(node, false));
-        result.setColor(this.getNodeBackgroundColor(node.nodeType));
+        result.setColor(this.getNodeBackgroundColor(node.nodeType, false));
         return result;
     }
 

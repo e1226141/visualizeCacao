@@ -263,7 +263,7 @@ class CfgGraphBuilder extends HirGraphBuilder {
         edgeList.forEach( (e: DisplayEdge<HIREdge>) => { e.from = beginInst.id; });
       }
 
-      // color is based on the endInsts
+      // color is based on the endInst
       beginInst.setColor(this.getNodeBackgroundColor(endInst.getNode().nodeType, this.showBB));
       beginInst.endInstLink = endInst.id;
     });
