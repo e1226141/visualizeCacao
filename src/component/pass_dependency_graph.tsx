@@ -167,6 +167,8 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       width: '100%',
       nodes: {
         shape: 'box',
+        color: {border: '#000000'},
+        borderWidth: 1,
         borderWidthSelected: 4
       },
       edges: {
@@ -198,7 +200,11 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
 
   private _getOptionsForLegend(): JSON {
     let options: any = {
-      nodes: { shape: 'box' },
+      nodes: {
+          shape: 'box',
+          color: {border: '#000000'},
+          borderWidth: 1
+      },
       edges: {
         arrows: { 'to': { 'enabled': true } },
         color: {inherit: false },

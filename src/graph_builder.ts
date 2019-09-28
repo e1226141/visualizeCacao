@@ -16,6 +16,7 @@ export class DisplayNode<IN_N extends BaseNode> {
     level?: number;
     shapeProperties?: JSON;
     hidden: boolean;
+    borderWidth?: number;
 
     constructor(pNode: IN_N, label: string) {
         this._node = pNode;
@@ -40,6 +41,7 @@ export class DisplayEdge<IN_E extends BaseEdge> {
     width?: number;
     dashes?: boolean;
     hidden?: boolean;
+    arrows?: {};
 
     private _edge: IN_E;
     getEdge = (): IN_E => {

@@ -32,6 +32,8 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
           align: 'left',
           multi: 'md'
         },
+        color: {border: '#000000'},
+        borderWidth: 1,
         borderWidthSelected: 4
       },
       edges: {

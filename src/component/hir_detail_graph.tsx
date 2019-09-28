@@ -45,9 +45,22 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
         font: {
           face: 'monospace',
           align: 'left',
-          multi: 'html'
+          multi: 'html',
+          bold: {
+            color: '#343434',
+            size: 16, // px
+            face: 'monospace',
+            mod: 'bold'
+          },
+          ital: {
+            color: '#8B0000',
+            size: 16, // px
+            face: 'monospace',
+            mod: 'italic',
+          },
         },
-        borderWidthSelected: 4
+        color: {border: '#000000'},
+        borderWidthSelected: 2
       },
       edges: {
         arrows: {
@@ -78,7 +91,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
 
   private _getOptionsForLegend(): JSON {
     let options: any = {
-      nodes: { shape: 'box' },
+      nodes: { shape: 'box', color: {border: '#000000'} },
       edges: {
         arrows: { 'to': { 'enabled': true } },
         color: {inherit: false },
@@ -215,6 +228,13 @@ class DetailGraphBuilder extends HirGraphBuilder {
     // floating instruction will be displayed with borderDashes
     if (!node.BB) {
       result.shapeProperties = { 'borderDashes': [5, 5] };
+      result.borderWidth = 1;
+    } else {
+      if (node.isCfgNode()) {
+        result.borderWidth = 3;
+      } else {
+        result.borderWidth = 2;
+      }
     }
     return result;
   }
@@ -238,13 +258,25 @@ class DetailGraphBuilder extends HirGraphBuilder {
   private _getSpacing(primaryLabelLength: number, secondaryLabelLength: number): string {
     let nonBreakableSpaces = '';
     if (secondaryLabelLength >= primaryLabelLength) {
-      primaryLabelLength = secondaryLabelLength + 3;
+      primaryLabelLength = secondaryLabelLength;
     }
+    primaryLabelLength += 2;
     for (let i = secondaryLabelLength; i < primaryLabelLength; i++) {
       nonBreakableSpaces += ' '; // special invisible char (alt + 255)
     }
     return nonBreakableSpaces;
   }
+
+  protected toDisplayEdge(edge: HIREdge): DisplayEdge<HIREdge> {
+    let result = super.toDisplayEdge(edge);
+    if (edge.edgeType == HIREdgeType.op) {
+      result.arrows = {to: {enabled: true, type: 'circle'}};
+    } else if (edge.edgeType == HIREdgeType.bb) {
+      result.arrows = {to: {enabled: false}};
+    }
+
+    return result;
+}
 
   protected getEdgeLabel(edge: HIREdge): string {
     if (edge.edgeType == HIREdgeType.cfg && edge.trueBranch != undefined) {
