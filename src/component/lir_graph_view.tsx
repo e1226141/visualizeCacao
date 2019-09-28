@@ -91,12 +91,12 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
     };
 
     return (
-      <div style={{borderAll: 0, margin: 0}}>
-        <Segment.Group horizontal raised style={{ padding: 0, margin: 0 }}>
-          <Segment floated='left' attached={true}>
+      <div>
+        <Segment.Group horizontal raised style={{ padding: 0, margin: 0 }} id='lirGraphSearchBar'>
+          <Segment floated='left' compact>
             <NodeSearch graph={graph} valueSelectedHandler={lirSearchValueSelected} style={{ paddingRight: '20px', width: '100%' }} />
           </Segment>
-          <Segment floated='right' compact size='mini' attached={true}>
+          <Segment floated='right' compact size='mini'>
             <Popup trigger={
               <Statistic size='mini' floated='right'>
                 <Statistic.Value>{lir.instructions.length}</Statistic.Value>

@@ -1,8 +1,10 @@
 import { BaseNode, BaseEdge } from './data';
+import { string } from 'prop-types';
 
 export class DisplayNode<IN_N extends BaseNode> {
     id: number;
     name: string;
+    internalGroup?: string;
 
     private _node: IN_N;
     getNode = (): IN_N => {
@@ -17,6 +19,7 @@ export class DisplayNode<IN_N extends BaseNode> {
     shapeProperties?: JSON;
     hidden: boolean;
     borderWidth?: number;
+    group?: string;
 
     constructor(pNode: IN_N, label: string) {
         this._node = pNode;

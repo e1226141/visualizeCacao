@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
 import { HirGraphBuilder } from './hir_base';
+import { DisplayNode, DisplayEdge } from '../graph_builder';
 import { NetworkGraph } from './network_graph';
 import { NodeSearch } from './node_search';
-import { Network } from 'vis';
+import { Network, Node} from 'vis';
 import { Segment, Statistic, Popup, Portal, Grid, Message, Icon, Checkbox} from 'semantic-ui-react';
 
 export interface IDetailGraphProps {
@@ -178,7 +179,8 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
         <div id='detailNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-              getVisNetwork={ (network) => { this._detailNetwork = network; } } />
+              getVisNetwork={ (network) => { this._detailNetwork = network; } }
+              getNodeBlock={ (n: Node) => { return n.internalGroup ? n.internalGroup : n.id; } } />
           </div>
               <Portal onClose={this._onHideLegend} open={this.state.showLegend}
                 closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
@@ -226,10 +228,14 @@ class DetailGraphBuilder extends HirGraphBuilder {
   protected toDisplayNode(node: HIRNode): DisplayNode<HIRNode> {
     let result = super.toDisplayNode(node);
     // floating instruction will be displayed with borderDashes
-    if (!node.BB) {
+    if (node.BB == undefined) {
+      result.internalGroup = undefined;
+      result.group = undefined;
       result.shapeProperties = { 'borderDashes': [5, 5] };
       result.borderWidth = 1;
     } else {
+      result.internalGroup = '' + node.BB;
+      result.group = '' + node.BB % 8;
       if (node.isCfgNode()) {
         result.borderWidth = 3;
       } else {
@@ -245,7 +251,7 @@ class DetailGraphBuilder extends HirGraphBuilder {
     let htmlElement =
     '<b>' + primaryLableText + '</b>\n\n'
       +  '<i>' + type + '</i>'
-       + (node.BB
+       + (node.BB != undefined
         ? this._getSpacing(primaryLableText.length, type.length + (('BB ' + node.BB).length)) + '<i>BB ' + node.BB + '</i>'
         : '');
     return htmlElement;

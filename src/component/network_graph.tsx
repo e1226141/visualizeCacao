@@ -9,6 +9,7 @@ export interface INetworkGraphProps {
   events?: any;
   style: any;
   getVisNetwork?: (network: Network) => void;  // expose the vis.js network
+  getNodeBlock?: (node: Node) => string; // optional method to group nodes into blocks (like ie. a BasicBlock in HIR)
 }
 
 export interface INetworkGraphState {
@@ -36,12 +37,6 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   componentDidMount() {
     this.createGraph();
   }
-
-  //componentDidUpdate(prevProps: INetworkGraphProps, prevState: INetworkGraphState) {
-  // // only update chart if the data has changed
-  //  this._network.stabilize(1000);
-  //  this._network.fit();
-  //}
 
   createGraph() {
     let identifier = this.state.identifier || '';
@@ -168,17 +163,18 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       layoutOptions: {
         'elk.algorithm': 'layered',
         'elk.direction': 'DOWN',
+        'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
         'elk.layered.cycleBreaking.strategy': 'DEPTH_FIRST',
         'elk.layered.feedbackEdges': true,
         'elk.layered.wrapping.multiEdge.improveCuts': true,
-        'elk.layered.nodePlacement.strategy': 'LINEAR_SEGMENTS',
+        'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
         'elk.layered.wrapping.additionalEdgeSpacing': 10,
         'elk.padding': '[top=10,left=20,bottom=10,right=20]',
         'elk.layered.spacing.nodeNodeBetweenLayers': 70,
         'elk.layered.spacing.edgeEdgeBetweenLayers': 20,
         'elk.edgeRouting': 'SPLINE'
       },
-      children: JSON.parse(JSON.stringify(nodes.map(n => this.mapToNode(n)))),
+      children: JSON.parse(this.mapNodes(nodes)),
       edges: JSON.parse(JSON.stringify(edges.map(e => this.mapToEdge(e))))
     };
 
@@ -186,17 +182,16 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         .then((g: any) => {
           let myUpdateSet: any = [];
           let elkNodes = g.children;
-          // console.log('elkNodes: ' + elkNodes.length);
           elkNodes.forEach((n: any) => {
-            myUpdateSet.push({id: n.id, x: n.x, y: n.y});
             if (n.children) {
-              // console.log('elkNodes-childs: ' + n.children.length);
               n.children.forEach((cn: any) => {
-                myUpdateSet.push({id: cn.id, x: cn.x, y: cn.y});
+                // computed coordinates are always relative to the surrounding container
+                myUpdateSet.push({id: cn.id, x: cn.x + n.x, y: cn.y + n.y});
               });
+            } else {
+              myUpdateSet.push({id: n.id, x: n.x, y: n.y});
             }
           });
-          // console.log('updateSet: ' + myUpdateSet.length);
           //console.log(myUpdateSet);
           this._nodes.update(myUpdateSet);
 
@@ -206,6 +201,40 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
             this._network.fit();
           }
       });
+  }
+
+  private mapNodes(nodes: Node[]): string  {
+    const getNodeBlockFkt = this.props.getNodeBlock;
+    if (getNodeBlockFkt) {
+      console.log('mapNodes by getNodeBlockFkt');
+      const containerMap = new Map<string, Node[]>();
+      nodes.forEach(n => {
+        const containerId = getNodeBlockFkt(n);
+        let nodesInContainer = containerMap.get(containerId);
+        if (!nodesInContainer) {
+          nodesInContainer = [];
+          containerMap.set(containerId, nodesInContainer);
+        }
+        nodesInContainer.push(n);
+      });
+
+      let result: any[] = [];
+      containerMap.forEach((nodesInContainer: Node[], id: string) => {
+          if (nodesInContainer.length == 1) {
+            //console.log('add single node to computation: ' + id);
+            result.push(this.mapToNode(nodesInContainer[0]));
+          } else {
+            //console.log('add multiple node to computation: ' + id);
+            const  childNodes = nodesInContainer.map(n => this.mapToNode(n));
+            const containerWidth = childNodes.map(n => n.width).reduce((a, b) => a + b);
+            const containerHeight = childNodes.map(n => n.height).reduce((a, b) => a + b);
+            result.push({ id: 'containerId-' + id, width: containerWidth, height: containerHeight, children: childNodes });
+            //console.log('container id: ' + id + ': ' + containerWidth + '/' + containerHeight);
+          }
+      });
+      return JSON.stringify(result);
+    }
+    return JSON.stringify(nodes.map(n => this.mapToNode(n)));
   }
 
   private mapToNode(n: Node): { id: string | number | undefined; width: number; height: number; } {

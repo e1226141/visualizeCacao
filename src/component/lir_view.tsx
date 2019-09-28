@@ -28,11 +28,11 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
   render() {
     const tabpanes = [
       { menuItem: 'Graph', render: () =>
-        <Tab.Pane attached={true}>
+        <Tab.Pane>
           <LirGraphView pass={this.state.selectedPass} networkGraphStyle={{ height: '1024px' }}/>
         </Tab.Pane> },
       { menuItem: 'List', render: () =>
-        <Tab.Pane attached={true}>
+        <Tab.Pane>
           <LirListView pass={this.state.selectedPass} />
         </Tab.Pane> },
     ];
@@ -50,7 +50,7 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
             </div>
             {passList}
           </div>
-          <Tab menu={{borderless: true, attached: true, secondary: false, pointing: false }} panes={tabpanes} />
+          <Tab menu={{attached: 'top', secondary: false}} panes={tabpanes} />
         </SplitterLayout>
       </div>
     );
