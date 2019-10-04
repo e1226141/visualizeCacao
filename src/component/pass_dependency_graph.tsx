@@ -192,6 +192,9 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       },
       physics: {
         enabled: false
+      },
+      interaction: {
+        multiselect: true
       }
     };
     return options as JSON;

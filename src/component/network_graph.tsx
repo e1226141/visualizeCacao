@@ -22,6 +22,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   private _nodes: DataSet<Node>;
   private _network: Network;
   private _elk: ELK;
+  private _initialPositions: Map<string, Position>;
+  private _viewport: ViewPort;
 
   constructor(props: INetworkGraphProps) {
     super(props);
@@ -32,6 +34,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this._elk = new ELK();
     this.createGraph = this.createGraph.bind(this);
     this.computeCoordinates = this.computeCoordinates.bind(this);
+    this._initialPositions = new Map();
+    this._viewport = new ViewPort(0.5, 0, 0);
   }
 
   componentDidMount() {
@@ -47,7 +51,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this._edges = new DataSet(this.props.graph.edges);
     this._nodes = new DataSet(this.props.graph.nodes);
 
-    this.computeCoordinates(() => { this.initializeGraph(); }, true);
+    this.computeCoordinates(() => { this.initializeGraph(); }, /*restoreInitialPositions*/ true);
   }
 
   private initializeGraph() {
@@ -82,23 +86,29 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
 
     this._network.on('doubleClick', function (params) {
       if (params.nodes.length > 0) {
+        if (!highlightActive) {
+          _this.storeViewPort();
+        }
         highlightActive = true;
-        const selectedNode = params.nodes[0];
 
         // hide all nodes and reset those which should stay visible
         for (let nodeId in allNodes) {
           allNodes[nodeId].hidden = true;
         }
-        let connectedNodes: IdType[] | Array<{ fromId: IdType, toId: IdType }> = networkRef.getConnectedNodes(selectedNode);
-        for (let j = 0; j < connectedNodes.length; j++) {
-          const node = allNodes[connectedNodes[j]];
-          if (node) {
-            node.hidden = false;
+        if (params.nodes.length > 0) {
+          for (const selectedNode of params.nodes) {
+            let connectedNodes: IdType[] | Array<{ fromId: IdType, toId: IdType }> = networkRef.getConnectedNodes(selectedNode);
+            for (let j = 0; j < connectedNodes.length; j++) {
+              const node = allNodes[connectedNodes[j]];
+              if (node) {
+                node.hidden = false;
+              }
+            }
+            const mainNode = allNodes[selectedNode];
+            if (mainNode) {
+              mainNode.hidden = false;
+            }
           }
-        }
-        const mainNode = allNodes[selectedNode];
-        if (mainNode) {
-          mainNode.hidden = false;
         }
 
       // show all nodes
@@ -109,13 +119,15 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         highlightActive = false;
       }
 
+      _this.setState((prevState) => ({ ...prevState, highlightActive: highlightActive }));
+
       // transform the object into an array
       const updateArray = [];
       for (let nodeId in allNodes) {
           updateArray.push(allNodes[nodeId]);
       }
       graphContent.nodes.update(updateArray);
-      _this.computeCoordinates(() => {}, true);
+      _this.computeCoordinates(() => {}, /*restoreInitialPositions*/ highlightActive === false);
     });
   }
 
@@ -139,12 +151,25 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       if (changedEdges && nextProps.graph.edges && this._edges) {
         this._edges.add(nextProps.graph.edges);
       }
+      console.log('clear coordinates');
+      this._initialPositions.clear();
       this.computeCoordinates(() => {}, false);
     }
     return false;
   }
 
-  private computeCoordinates(initializeGraphFunction: Function, fitNetwork: boolean): Promise<any> {
+  private computeCoordinates(initializeGraphFunction: Function, restoreInitialCoordinates: boolean) {
+    if (restoreInitialCoordinates && this._initialPositions.size > 0) {
+      console.log('restore coordinates');
+      let myUpdateSet: any = [];
+      this._initialPositions.forEach((pos: Position, nodeId: string) => {
+        myUpdateSet.push({id: nodeId, x: pos.x, y: pos.y});
+      });
+      this._nodes.update(myUpdateSet);
+      this.restoreViewPort();
+      return;
+    }
+    console.log('compute coordinates: restoreInitialCoordinates:' + restoreInitialCoordinates + '; size' + this._initialPositions.size);
     let nodes = this._nodes.get({
       filter: function (item) {
         return item.hidden != true;
@@ -178,18 +203,27 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
       edges: JSON.parse(JSON.stringify(edges.map(e => this.mapToEdge(e))))
     };
 
-    return this._elk.layout(elkGraph)
+    const initializeInitialPositions = this._initialPositions.size == 0;
+    this._elk.layout(elkGraph)
         .then((g: any) => {
           let myUpdateSet: any = [];
           let elkNodes = g.children;
           elkNodes.forEach((n: any) => {
             if (n.children) {
               n.children.forEach((cn: any) => {
+                const newX = cn.x + n.x;
+                const newY = cn.y + n.y;
                 // computed coordinates are always relative to the surrounding container
-                myUpdateSet.push({id: cn.id, x: cn.x + n.x, y: cn.y + n.y});
+                myUpdateSet.push({id: cn.id, x: newX, y: newY});
+                if (initializeInitialPositions) {
+                  this._initialPositions.set(cn.id, new Position(newX, newY));
+                }
               });
             } else {
               myUpdateSet.push({id: n.id, x: n.x, y: n.y});
+              if (initializeInitialPositions) {
+                this._initialPositions.set(n.id, new Position(n.x, n.y));
+              }
             }
           });
           //console.log(myUpdateSet);
@@ -197,8 +231,9 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
 
           initializeGraphFunction();
 
-          if (fitNetwork) {
-            this._network.fit();
+          this._network.fit();
+          if (initializeInitialPositions) {
+            this.storeViewPort();
           }
       });
   }
@@ -256,9 +291,47 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     return { id: e.id, source: e.from, target: e.to };
   }
 
+  private storeViewPort(): void {
+    if (this._network) {
+      const scale = this._network.getScale();
+      const viewPosition = this._network.getViewPosition();
+      this._viewport = new ViewPort(scale, viewPosition.x, viewPosition.y);
+      console.log('stored viewport: :' + scale + '/' + viewPosition.x + '/' + viewPosition.y);
+    }
+  }
+
+  private restoreViewPort(): void {
+    if (this._network) {
+      const val = {
+        position: {x: this._viewport.viewPosition.x, y: this._viewport.viewPosition.y},
+        scale: this._viewport.scale
+      };
+      console.log('restore viewport: :' + JSON.stringify(val));
+      this._network.moveTo(val);
+    }
+  }
+
   render() {
     return (
       <div id={this.state.identifier} style={this.props.style} className='visNetwork' />
     );
+  }
+}
+
+class Position {
+  x: number;
+  y: number;
+  constructor(_x: number, _y: number) {
+    this.x = _x;
+    this.y = _y;
+  }
+}
+
+class ViewPort {
+  scale: number;
+  viewPosition: Position;
+  constructor(_scale: number, _x: number, _y: number) {
+    this.scale = _scale;
+    this.viewPosition = new Position(_x, _y);
   }
 }
