@@ -97,26 +97,25 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       <div>
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
             <Segment floated='left' horizontal='true'>
-              <Segment.Inline>
-                  <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} className='node-search-box'/>
+              <Segment.Inline>                  
                   <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
-                    content='displays the legend of the detail network graph' className='selection-checkbox'/>
+                    content='displays the legend of the detail network graph'/>
                   <Popup trigger={<Checkbox label='only enabled passes'
                     checked={this.state.showOnlyEnabledPasses} onClick={() => this._toggleShowOnlyEnabledPasses()}
-                    className='selection-checkbox'/>} content='hides all passes have not been enabled' className='selection-checkbox'/>
+                    className='selection-checkbox'/>} content='hides all passes have not been enabled' className='selection-label'/>
                   <Popup trigger={<Checkbox label='hide requires'
                     checked={this.state.hideRequireEdges} onClick={() => this._toggleHideRequireEdges()}
-                    className='selection-checkbox'/>} content='hides all "require" edges' className='selection-checkbox'/>
+                    className='selection-checkbox'/>} content='hides all "require" edges' className='selection-label'/>
                   <Popup trigger={<Checkbox label='hide provide'
                     checked={this.state.hideProvideEdges} onClick={() => this._toggleHideProvideEdges()}
-                    className='selection-checkbox'/>} content='hides all "provide" edges' className='selection-checkbox'/>
+                    className='selection-checkbox'/>} content='hides all "provide" edges' className='selection-label'/>
                   <Popup trigger={<Checkbox label='hide modifies'
                     checked={this.state.hideModifyEdges} onClick={() => this._toggleHideModifyEdges()}
-                    className='selection-checkbox'/>} content='hides all "modifies" edges' className='selection-checkbox'/>
+                    className='selection-checkbox'/>} content='hides all "modifies" edges' className='selection-label'/>
                   <Popup trigger={<Checkbox label='hide schedule'
                     checked={this.state.hideScheduleEdges} onClick={() => this._toggleHideScheduleEdges()}
-                    className='selection-checkbox'/>} content='hides all "schedule*" edges' className='selection-checkbox'/>
-
+                    className='selection-checkbox'/>} content='hides all "schedule*" edges' className='selection-label'/>
+                  <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} className='node-search-box'/>
               </Segment.Inline>
             </Segment>
             <Segment floated='right' compact size='mini'>
