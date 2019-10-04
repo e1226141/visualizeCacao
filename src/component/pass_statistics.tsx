@@ -37,7 +37,7 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
 
   private _createTable(totalTime: number) {
     return <Segment floated='left'>
-      <Table celled striped compact size='small' collapsing>
+      <Table celled compact size='small' collapsing>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>Index</Table.HeaderCell>
@@ -62,18 +62,23 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
   }
 
   private _createChart(totalTime: number) {
-    let chartData = this.props.optimizedMethod.passes.map((pass, index) => {
+    let maxPercentage = 1;
+    const chartData = this.props.optimizedMethod.passes.map((pass, index) => {
       let percentage = pass.time / totalTime * 100;
+      if (maxPercentage < percentage) {
+        maxPercentage = percentage;
+      }
       return {
         x: index + 1,
         y: percentage,
         label: pass.name + '(' + pass.time + ' ns / ' + percentage.toFixed(1) + '%)'
       };
     });
+    maxPercentage += 2;
     return <Segment>
       <VictoryChart height={400} width={400}
         theme={VictoryTheme.material}
-        domain={{ x: [0, chartData.length], y: [0, 100] }}
+        domain={{ x: [0, chartData.length], y: [0, maxPercentage] }}
         domainPadding={10}>
         <VictoryScatter data={chartData}
           bubbleProperty='y'
@@ -165,8 +170,12 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
 
   private _createPassEntry(pass: Pass, index: number, totalTime: number): any {
     let percentage = pass.time / totalTime * 100;
+    let className = '';
+    if (percentage > 5) {
+      className = 'negative';
+    }
     return (
-      <Table.Row key={index}>
+      <Table.Row key={index} className={className} >
         <Table.Cell>{index + 1}</Table.Cell>
         <Table.Cell>{pass.name}</Table.Cell>
         <Table.Cell textAlign='right'>{pass.time}</Table.Cell>
