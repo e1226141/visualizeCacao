@@ -225,10 +225,15 @@ export class LIRGraphData implements Serializable<LIRGraphData> {
 }
 
 export class Pass implements Serializable<Pass> {
+    index: number; // unique index, will be set when creating the data from json
     name: string;
     time: number;
     hir?: HIRGraphData;
     lir?: LIRGraphData;
+
+    constructor(_index: number) {
+      this.index = _index;
+    }
 
     fromJSON(input: any) {
       this.name = input.name;
@@ -255,7 +260,7 @@ export class OptimizedMethod implements Serializable<OptimizedMethod> {
       this.method = input.method;
       this.desc = input.desc;
       this.passDependencyGraph = new PassDependencyGraphData().fromJSON(input.passDependencyGraph);
-      this.passes = input.passes.map((pass: any) => new Pass().fromJSON(pass));
+      this.passes = input.passes.map((pass: any, index: number) => new Pass(index).fromJSON(pass));
       return this;
     }
 }

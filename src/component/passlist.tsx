@@ -7,6 +7,7 @@ export interface IPassListProps {
   handleClick: (pass: Pass) => void;
   ignorePrinterPasses: boolean;
   showPass: (pass: Pass) => boolean;
+  initialIndex: number;
 }
 
 export interface IPassListState {
@@ -17,7 +18,7 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
 
   constructor(props: IPassListProps) {
     super(props);
-    this.state = {activeIndex: -1};
+    this.state = {activeIndex: this.props.initialIndex};
     this.handleClick = this.handleClick.bind(this);
   }
 
@@ -30,7 +31,7 @@ export class PassList extends React.Component<IPassListProps, IPassListState> {
     return (
       <div>
         <Button.Group vertical>
-        {this.props.passes.map( (pass, index) => this._createListEntry(this.state, pass, index))}
+        {this.props.passes.map( pass => this._createListEntry(this.state, pass, pass.index))}
       </Button.Group>
       </div>
     );

@@ -35,6 +35,10 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
     );
   }
 
+  private _formatNumber(value: number): string {
+    return value.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+  }
+
   private _createTable(totalTime: number) {
     return <Segment floated='left'>
       <Table celled compact size='small' collapsing>
@@ -53,7 +57,7 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
           <Table.Row>
             <Table.HeaderCell />
             <Table.HeaderCell></Table.HeaderCell>
-            <Table.HeaderCell textAlign='right'>{totalTime}</Table.HeaderCell>
+            <Table.HeaderCell textAlign='right'>{this._formatNumber(totalTime)}</Table.HeaderCell>
             <Table.HeaderCell textAlign='right'>100.00</Table.HeaderCell>
           </Table.Row>
         </Table.Footer>
@@ -178,7 +182,7 @@ export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
       <Table.Row key={index} className={className} >
         <Table.Cell>{index + 1}</Table.Cell>
         <Table.Cell>{pass.name}</Table.Cell>
-        <Table.Cell textAlign='right'>{pass.time}</Table.Cell>
+        <Table.Cell textAlign='right'>{this._formatNumber(pass.time)}</Table.Cell>
         <Table.Cell textAlign='right'>{percentage.toFixed(1)}</Table.Cell>
       </Table.Row>
     );

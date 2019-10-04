@@ -21,8 +21,9 @@ export interface IHIRState {
 export class HIR extends React.Component<IHIRProps, IHIRState> {
   constructor(props: IHIRProps) {
     super(props);
+    const firstHIRPass = props.optimizedMethod.passes.filter(p => p.hir != null)[0];
     this.state = {
-      selectedPass: props.optimizedMethod.passes.filter(p => p.hir != null)[0],
+      selectedPass: firstHIRPass,
       showBB: true,
       showPasses: true,
       showEdgeLabels: true,
@@ -47,16 +48,16 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   }
 
   render() {
-    let passList = this.state.showPasses
+    const passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
         showPass={ (pass: Pass) => {
           const graph: HIRGraphData | undefined = pass.hir;
           return graph != null && graph.nodes != null && graph.nodes.length > 0;
-        }} />
+        }} initialIndex={this.state.selectedPass.index}/>
       : <div></div>;
     return (
       <div>
-        <SplitterLayout horizontal percentage primaryIndex={1} primaryInitialSize={90} secondaryInitialSize={10}>
+        <SplitterLayout vertical={false} percentage={true} primaryIndex={1} primaryInitialSize={85} secondaryInitialSize={10}>
           <div>
             <div>
               <Button onClick={() => this._toggleShowPasses()} title='show/hide pass-list'><Icon name='list' size='big' /></Button>

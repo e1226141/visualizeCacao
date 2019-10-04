@@ -39,7 +39,7 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
 
     let passList = this.state.showPasses
     ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
-      showPass={ (pass: Pass) => pass.lir != null } />
+      showPass={ (pass: Pass) => pass.lir != null } initialIndex={this.state.selectedPass.index} />
     : <div></div>;
     return (
       <div>
