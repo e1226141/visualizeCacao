@@ -76,6 +76,9 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
           enabled: true,
           type: 'straightCross'
         },
+        font: {
+          align: 'top'
+        },
         selectionWidth: 3
       },
       layout: {

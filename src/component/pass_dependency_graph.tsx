@@ -180,10 +180,13 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
           enabled: true,
           type: 'straightCross'
         },
-        selectionWidth: 3,
         color: {
           inherit: false
         },
+        font: {
+          align: 'top'
+        },
+        selectionWidth: 3
       },
       layout: {
         hierarchical: {

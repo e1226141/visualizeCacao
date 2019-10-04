@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Pass, LIRGraphData, MachineInstruction } from '../data';
+import { Pass, LIRGraphData, MachineInstruction, BaseNode, BaseEdge } from '../data';
 import { NetworkGraph } from './network_graph';
+import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
 import { Segment, Statistic, Popup } from 'semantic-ui-react';
@@ -48,6 +49,9 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
         smooth: {
           enabled: true,
           type: 'straightCross'
+        },
+        font: {
+          align: 'top'
         },
         selectionWidth: 3
       },
@@ -105,7 +109,7 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
             } content={'number of machine instructions'} />
             <Popup trigger={
               <Statistic size='mini' floated='right'>
-                <Statistic.Value>{lirBuilder.getNodes().length}</Statistic.Value>
+                <Statistic.Value>{graph.nodes.length}</Statistic.Value>
                 <Statistic.Label>{'MBB'}</Statistic.Label>
               </Statistic>
             } content={'number of machine basic blocks'} />
@@ -122,49 +126,74 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
   }
 }
 
-class MachineBasicBlock {
-  constructor(public id: string, public instructions: MachineInstruction[], public label: string) { }
+class MachineBasicBlock extends BaseNode {
+  public id: number;
+  public name: string;
+  public MBBId: string;
+  public instructions: MachineInstruction[];
+
+  constructor(_id: string, _instructions: MachineInstruction[], _name: string) {
+    super();
+    this.id = this._removeNonDigits(_id);
+    this.MBBId = _id;
+    this.instructions = _instructions;
+    this.name = _name;
+  }
 
   getSuccessors(): string[] {
     if (this.instructions.length == 0) {
       return [];
     }
     const lastInstruction = this.instructions[this.instructions.length - 1];
-    // console.log(this.id + ': successors: ' + lastInstruction.successors);
     if (lastInstruction.successors) {
-      return lastInstruction.successors.map(successor => this.removeMBBFromString(successor));
+      return lastInstruction.successors;
     }
     return [];
   }
 
-  removeMBBFromString(successor: string): string {
+  getNumberFromString(successor: string): number {
     const index = successor.indexOf('=');
     if (index == -1) {
-      return successor;
+      return this._removeNonDigits(successor);
     }
-    return successor.substring(index + 1);
+    return this._removeNonDigits(successor.substring(index + 1));
+  }
+
+  _removeNonDigits(value: string): number {
+    return Number(value.replace(/\D/g, ''));
   }
 }
 
-class MachineBasicBlockEdges {
-  constructor(public from: string, public to: string) { }
+class MachineBasicBlockEdges extends BaseEdge {
+  public thenBranch: boolean = false;
+  public elseBranch: boolean = false;
+  constructor(MBB: MachineBasicBlock, to: string) {
+    super();
+    this.from = MBB.id;
+    this.to = MBB._removeNonDigits(to);
+    if (to.indexOf('then') != -1) {
+      this.thenBranch = true;
+    }
+    if (to.indexOf('else') != -1) {
+      this.elseBranch = true;
+    }
+  }
 }
 
-class LirGraphBuilder {
-  protected _nodes: MachineBasicBlock[];
-  protected _edges: MachineBasicBlockEdges[];
+class LirGraphBuilder
+  extends GraphBuilder<MachineBasicBlock, MachineBasicBlockEdges, DisplayNode<MachineBasicBlock>, DisplayEdge<MachineBasicBlockEdges>> {
+
+  private _maxPadding: number;
 
   constructor(lir: LIRGraphData) {
-    this._nodes = this.createMachineBasicBlocks(lir.instructions);
-    this._edges = this.createMachineBasicBlockEdges(this._nodes);
-  }
+    super();
 
-  public getNodes() {
-    return this._nodes;
-  }
+    // structure of LIR is different than the other graphs, so first convert each instruction into MBBs
+    const MBBs = this.createMachineBasicBlocks(lir.instructions);
+    const MBBEdges = this.createMachineBasicBlockEdges(MBBs);
+    this._maxPadding = lir.instructions.map(i => i.id).reduce((a, b) => Math.max(a, b)).toString().length;
 
-  public getEdges() {
-    return this._edges;
+    this.init(MBBs, MBBEdges);
   }
 
   private createMachineBasicBlocks(instructions: MachineInstruction[]): MachineBasicBlock[] {
@@ -172,30 +201,68 @@ class LirGraphBuilder {
     const MBBs: MachineBasicBlock[] = [];
     let currentMBB: MachineBasicBlock;
     instructions.forEach(instruction => {
-      if (currentMBB == undefined || currentMBB.id != instruction.BB) {
+      if (currentMBB == undefined || currentMBB.MBBId != instruction.BB) {
         currentMBB = new MachineBasicBlock(instruction.BB, [], instruction.BB);
         MBBs.push(currentMBB);
       }
       currentMBB.instructions.push(instruction);
     });
-
-    // create display values
-    const maxPadding = instructions.map(i => i.id).reduce( (a, b) => Math.max(a, b)).toString().length;
-    MBBs.forEach(MBB => {
-      MBB.label = '*' + MBB.id + '*\n' + MBB.instructions.map(i => this.instructionToString(i, maxPadding)).join('\n');
-    });
     return MBBs;
+  }
+
+  protected toDisplayNode(node: MachineBasicBlock): DisplayNode<MachineBasicBlock> {
+    const label = node.name = '*' + node.MBBId + '*\n\n' + node.instructions.map(i => this.instructionToString(i, this._maxPadding)).join('\n');
+    const result: DisplayNode<MachineBasicBlock> = new DisplayNode<MachineBasicBlock>(node, label);
+    result.setColor(this.getNodeBackgroundColor(node.getSuccessors().length));
+    return result;
+  }
+
+  protected getNodeBackgroundColor(successorCount: number): string {
+    // RETURN
+    if (successorCount == 0) {
+      return '#FFA807';
+    }
+    // GOTO
+    if (successorCount == 1) {
+      return '#97C2FC';
+    }
+    // IF Instruction
+    return '#D1F6BC';
+}
+
+  protected toDisplayEdge(edge: MachineBasicBlockEdges): DisplayEdge<MachineBasicBlockEdges> {
+    const result: DisplayEdge<MachineBasicBlockEdges> = new DisplayEdge<MachineBasicBlockEdges>(edge, this.getEdgeLabel(edge));
+     result.setColor(this.getEdgeColor(edge));
+    return result;
+  }
+
+  private getEdgeColor(edge: MachineBasicBlockEdges): string {
+    if (edge.thenBranch === true) {
+      return '#5aa52b';
+    }
+    if (edge.elseBranch === true) {
+        return '#7C29F0';
+    }
+    return '#000000';
+  }
+
+  protected getEdgeLabel(edge: MachineBasicBlockEdges): string {
+    if (edge.thenBranch === true) {
+      return 'then';
+    }
+    if (edge.elseBranch === true) {
+        return 'else';
+    }
+    return '';
   }
 
   private createMachineBasicBlockEdges(MBBs: MachineBasicBlock[]): MachineBasicBlockEdges[] {
     const concat = (x: MachineBasicBlockEdges[], y: MachineBasicBlockEdges[]) => x.concat(y);
-    return MBBs.map(MBB => this.mapToEdges(MBB.id, MBB.getSuccessors())).reduce(concat, []);
+    return MBBs.map(MBB => this.mapToEdges(MBB)).reduce(concat, []);
   }
 
-  private mapToEdges = (id: string, successors: string[]): MachineBasicBlockEdges[] => {
-    const result: MachineBasicBlockEdges[] = [];
-    successors.forEach(successor => result.push(new MachineBasicBlockEdges(id, successor)));
-    return result;
+  private mapToEdges = (MBB: MachineBasicBlock): MachineBasicBlockEdges[] => {
+    return MBB.getSuccessors().map(s => new MachineBasicBlockEdges(MBB, s));
   }
 
   private leftPad(value: number, padLength: number) {
@@ -215,13 +282,5 @@ class LirGraphBuilder {
       result += ' _' + instruction.successors + '_';
     }
     return result;
-  }
-
-  toJSONGraph = (): JSON => {
-    let graph: any = {
-      'nodes': JSON.parse(JSON.stringify(this._nodes)),
-      'edges': JSON.parse(JSON.stringify(this._edges))
-    };
-    return graph as JSON;
   }
 }

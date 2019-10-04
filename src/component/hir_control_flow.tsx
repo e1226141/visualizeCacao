@@ -53,6 +53,9 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           enabled: true,
           type: 'straightCross'
         },
+        font: {
+          align: 'horizontal'
+        },
         selectionWidth: 3
       },
       layout: {
