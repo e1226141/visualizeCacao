@@ -69,7 +69,7 @@ export abstract class GraphBuilder<IN_N extends BaseNode, IN_E extends BaseEdge,
     protected _displayNodeMap: Map<number, N> = new Map();
     protected _displayEdgeMap: Map<number, Array<E>> = new Map();
 
-    init(nodes: IN_N[], edges: IN_E[]): void {
+    protected init(nodes: IN_N[], edges: IN_E[]): void {
         this.nodes = nodes.map((n) => this.toDisplayNode(n));
         this.edges = edges.map((e) => this.toDisplayEdge(e));
         this.createLookupMaps();
