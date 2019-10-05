@@ -17,6 +17,7 @@ export interface IDetailGraphState {
   showLegend: boolean;
   selectedNode: number;
   hideSourceStates: boolean;
+  hideSchedulingEdges: boolean;
 }
 
 export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraphState> {
@@ -27,14 +28,19 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
     this.state = {
       showLegend: false,
       selectedNode: -1,
-      hideSourceStates: true
+      hideSourceStates: true,
+      hideSchedulingEdges: true,
     };
 
     this._toggleHideSourceStates = this._toggleHideSourceStates.bind(this);
+    this._toggleHideSchedulingEdges = this._toggleHideSchedulingEdges.bind(this);
   }
 
   private _toggleHideSourceStates =
     () => this.setState((prevState) => ({ ...prevState, hideSourceStates: !prevState.hideSourceStates }))
+
+  private _toggleHideSchedulingEdges =
+    () => this.setState((prevState) => ({ ...prevState, hideSchedulingEdges: !prevState.hideSchedulingEdges }))
 
   private _getDefaultOptions(): JSON {
     let options: any = {
@@ -131,7 +137,8 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
     const graphBuilder = new DetailGraphBuilder(
       hir.nodes,
       hir.edges,
-      this.state.hideSourceStates
+      this.state.hideSourceStates,
+      this.state.hideSchedulingEdges
     );
 
     const graph: JSON = graphBuilder.toJSONGraph();
@@ -162,11 +169,14 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
           <Segment floated='left'>
               <div>
-                <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
-                  content='displays the legend of the detail network graph'/>
                 <Popup trigger={<Checkbox label='hide source state'
                     checked={this.state.hideSourceStates} onClick={() => this._toggleHideSourceStates()}
                     className='selection-checkbox'/>} content='hides all source state instructions' className='selection-checkbox'/>
+                <Popup trigger={<Checkbox label='hide scheduling edges'
+                    checked={this.state.hideSchedulingEdges} onClick={() => this._toggleHideSchedulingEdges()}
+                    className='selection-checkbox'/>} content='hides all scheduling edges' className='selection-checkbox'/>
+                <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
+                  content='displays the legend of the detail network graph'/>            
               </div>
               <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} style={{paddingRight: '20px', width: '100%'}} />
           </Segment>
@@ -215,8 +225,8 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
 }
 
 class DetailGraphBuilder extends HirGraphBuilder {
-
-  constructor(nodes: HIRNode[], edges: HIREdge[], hideSourceStates: boolean) {
+  private _hideSchedulingEdges: boolean;
+  constructor(nodes: HIRNode[], edges: HIREdge[], hideSourceStates: boolean, hideSchedulingEdges: boolean) {
     super();
 
     let nodeIdsToRemove = new Set<Number>(
@@ -225,6 +235,7 @@ class DetailGraphBuilder extends HirGraphBuilder {
       nodes = nodes.filter(node => !nodeIdsToRemove.has(node.id));
       edges = edges.filter(edge => !nodeIdsToRemove.has(edge.from)).filter(edge => !nodeIdsToRemove.has(edge.to));
     }
+    this._hideSchedulingEdges = hideSchedulingEdges;
     this.init(nodes, edges);
   }
 
@@ -282,8 +293,12 @@ class DetailGraphBuilder extends HirGraphBuilder {
       result.arrows = {to: {enabled: true, type: 'circle'}};
     } else if (edge.edgeType == HIREdgeType.bb) {
       result.arrows = {to: {enabled: false}};
+      result.width = 3;
+    } else if (edge.edgeType == HIREdgeType.cfg) {
+      result.width = 3;
+    } else if (edge.edgeType == HIREdgeType.sched) {
+      result.hidden = this._hideSchedulingEdges;
     }
-
     return result;
 }
 
