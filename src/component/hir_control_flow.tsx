@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
 import { DisplayNode, DisplayEdge } from '../graph_builder';
 import { HirGraphBuilder } from './hir_base';
-import { NetworkGraph } from './network_graph';
+import { NetworkGraph, NodeSelectorHelper } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
 import { Segment, Checkbox, Statistic, Popup, Portal, Grid, Message, Icon } from 'semantic-ui-react';
@@ -141,6 +141,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
       this._cfgNetwork.focus(id, { scale: 1.0 });
     };
 
+    const nodeSelector = new NodeSelector();
+
     return (
       <div>
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
@@ -171,7 +173,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
         <div id='cfgNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-              getVisNetwork={ (network) => { this._cfgNetwork = network; } } />
+              getVisNetwork={ (network) => { this._cfgNetwork = network; } }
+              nodeSelector={nodeSelector} />
           </div>
           <Portal onClose={this._onHideLegend} open={this.state.showLegend}
             closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
@@ -190,7 +193,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
                   </Grid.Row>
                   <Grid.Row columns={1} stretched>
                     <Grid.Column>
-                      <NetworkGraph graph={legend} options={legendOptions} style={{width: '400px', height: '300px'}} />
+                      <NetworkGraph graph={legend} options={legendOptions} style={{ width: '400px', height: '300px' }} />
                     </Grid.Column>
                   </Grid.Row>
                 </Grid>
@@ -283,5 +286,14 @@ class CfgGraphBuilder extends HirGraphBuilder {
 
     // remove all 'bb' edges
     this.edges = this.edges.filter(e => e.getEdge().edgeType !== HIREdgeType.bb);
+  }
+}
+
+class NodeSelector extends NodeSelectorHelper {
+  public getNodesForSelection(networkRef: Network, selectedNode: any, allNodes: vis.Node[]): vis.Node[] {
+    console.log('using custom HIR node selector');
+    const nodes = super.getNodesForSelection(networkRef, selectedNode, allNodes);
+    nodes.forEach(n => this.getConnectedVisNodes(networkRef, n.id, allNodes).forEach(connNode => nodes.push(connNode)));
+    return nodes;
   }
 }

@@ -10,11 +10,12 @@ export interface INetworkGraphProps {
   style: any;
   getVisNetwork?: (network: Network) => void;  // expose the vis.js network
   getNodeBlock?: (node: Node) => string; // optional method to group nodes into blocks (like ie. a BasicBlock in HIR)
+  nodeSelector?: NodeSelectorHelper;
 }
 
 export interface INetworkGraphState {
   identifier?: string;
-   highlightActive: boolean;
+  highlightActive: boolean;
 }
 
 export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGraphState> {
@@ -24,6 +25,7 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
   private _elk: ELK;
   private _initialPositions: Map<string, Position>;
   private _viewport: ViewPort;
+  private _nodeSelector: NodeSelectorHelper;
 
   constructor(props: INetworkGraphProps) {
     super(props);
@@ -36,6 +38,12 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this.computeCoordinates = this.computeCoordinates.bind(this);
     this._initialPositions = new Map();
     this._viewport = new ViewPort(0.5, new Position(0, 0));
+    if (this.props.nodeSelector == undefined) {
+      this._nodeSelector = new NodeSelectorHelper();
+    } else {
+      console.log('node selector overwritten');
+      this._nodeSelector = this.props.nodeSelector;
+    }
   }
 
   componentDidMount() {
@@ -97,17 +105,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
         }
         if (params.nodes.length > 0) {
           for (const selectedNode of params.nodes) {
-            let connectedNodes: IdType[] | Array<{ fromId: IdType, toId: IdType }> = networkRef.getConnectedNodes(selectedNode);
-            for (let j = 0; j < connectedNodes.length; j++) {
-              const node = allNodes[connectedNodes[j]];
-              if (node) {
-                node.hidden = false;
-              }
-            }
-            const mainNode = allNodes[selectedNode];
-            if (mainNode) {
-              mainNode.hidden = false;
-            }
+            const nodesToShow = _this._nodeSelector.getNodesForSelection(networkRef, selectedNode, allNodes);
+            nodesToShow.forEach(n => n.hidden = false);
           }
         }
 
@@ -324,4 +323,35 @@ class Position {
 
 class ViewPort {
   constructor(public scale: number, public viewPosition: Position) { }
+}
+
+export class NodeSelectorHelper {
+  /**
+   * Returns a list of nodes which should be shown for the given selection.
+   * This can depend on the type of graph.
+   */
+  public getNodesForSelection(networkRef: Network, selectedNodeId: any, allNodes: Node[]): Node[] {
+
+    const nodesToShow: Node[] = this.getConnectedVisNodes(networkRef, selectedNodeId, allNodes);
+    const mainNode = allNodes[selectedNodeId];
+    if (mainNode) {
+      nodesToShow.push(mainNode);
+    }
+    return nodesToShow;
+  }
+
+  protected getConnectedVisNodes(networkRef: Network, selectedNodeId: any, allNodes: Node[]): Node[] {
+    const connectedNodes: IdType[] | Array<{
+      fromId: IdType;
+      toId: IdType;
+    }> = networkRef.getConnectedNodes(selectedNodeId);
+    const result: Node[] = [];
+    for (let j = 0; j < connectedNodes.length; j++) {
+      const node = allNodes[connectedNodes[j]];
+      if (node) {
+        result.push(node);
+      }
+    }
+    return result;
+  }
 }
