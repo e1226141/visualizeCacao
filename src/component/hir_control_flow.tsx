@@ -14,6 +14,7 @@ export interface IControlFlowProps {
   onClickShowBB: () => void;
   onClickShowEdgeLabels: () => void;
   networkGraphStyle: React.CSSProperties;
+  onSelectBB: (selectedBB: number) => void;
 }
 
 export interface IControlFlowState {
@@ -124,19 +125,17 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     const options: JSON = this._getDefaultOptions();
     const legendOptions: JSON = this._getOptionsForLegend();
 
+    const onSelectBB = this.props.onSelectBB;
     const events = {
       select: function (event: any) {
-        let { nodes, edges } = event;
-        console.log('Selected nodes:');
-        console.log(nodes);
-        console.log('Selected edges:');
-        console.log(edges);
+        let { nodes } = event;
+        onSelectBB(nodes);
       }
     };
     const statisticsLabel = this.props.showBB ? 'BB' : 'cfg-inst';
     const statisticsTooltip = this.props.showBB ? 'number of basic blocks' : 'number of control flow instructions';
     let cfgSearchValueSelected = (selection: any) => {
-      console.log('selected: ' + selection.id);
+      // console.log('selected: ' + selection.id);
       const id = selection.id;
       this._cfgNetwork.selectNodes( [id] );
       this._cfgNetwork.focus(id, { scale: 1.0 });

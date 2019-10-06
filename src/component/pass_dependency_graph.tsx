@@ -9,6 +9,7 @@ import { Segment, Statistic, Popup, Portal, Grid, Message, Icon, Checkbox } from
 export interface IPassDependencyProps {
   optimizedMethod: OptimizedMethod;
   networkGraphStyle: React.CSSProperties;
+  show: boolean;
 }
 
 export interface IPassDependencyState {
@@ -67,6 +68,9 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
   }
 
   render() {
+    if (!this.props.show) {
+      return null;
+    }
     const passDependencyGraph: PassDependencyGraphData | undefined = this.props.optimizedMethod.passDependencyGraph;
     if (!passDependencyGraph) {
       return;

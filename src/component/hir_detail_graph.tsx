@@ -11,6 +11,7 @@ export interface IDetailGraphProps {
   pass: Pass;
   showAdjacentNodeDistance: number;
   networkGraphStyle: React.CSSProperties;
+  getVisNetwork?: (network: Network) => void;  // expose the vis.js network
 }
 
 export interface IDetailGraphState {
@@ -157,17 +158,15 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
 
     const events = {
       select: function (event: any) {
-        let { nodes, edges } = event;
+        let { nodes } = event;
         console.log('Selected nodes:');
         console.log(nodes);
-        console.log('Selected edges:');
-        console.log(edges);
       }
     };
     const statisticsLabel = 'instructions';
     const statisticsTooltip = 'number of instructions';
     let searchValueSelected = (selection: any) => {
-      console.log('selected: ' + selection.id);
+      // console.log('selected: ' + selection.id);
       const id = selection.id;
       this._detailNetwork.selectNodes( [id] );
       this._detailNetwork.focus(id, { scale: 1.1 });
@@ -203,7 +202,12 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
         <div id='detailNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-              getVisNetwork={ (network) => { this._detailNetwork = network; } }
+              getVisNetwork={ (network) => { 
+                this._detailNetwork = network;
+                if (this.props.getVisNetwork) {
+                    this.props.getVisNetwork(this._detailNetwork);
+                  }
+              } }            
               getNodeBlock={ (n: Node) => { return n.internalGroup ? n.internalGroup : n.id; } }
               nodeSelector={this._nodeSelector} />
           </div>

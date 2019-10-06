@@ -41,7 +41,6 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.nodeSelector == undefined) {
       this._nodeSelector = new NodeSelectorHelper();
     } else {
-      console.log('node selector overwritten');
       this._nodeSelector = this.props.nodeSelector;
     }
   }

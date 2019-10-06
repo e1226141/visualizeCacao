@@ -9,6 +9,7 @@ import SplitterLayout from 'react-splitter-layout';
 
 export interface ILIRViewProps {
   optimizedMethod: OptimizedMethod;
+  show: boolean;
 }
 
 export interface ILIRViewState {
@@ -26,6 +27,9 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
   }
 
   render() {
+    if (!this.props.show) {
+      return null;
+    }
     const tabpanes = [
       { menuItem: 'Graph', render: () =>
         <Tab.Pane>

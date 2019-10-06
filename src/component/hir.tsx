@@ -3,11 +3,13 @@ import { OptimizedMethod, Pass, HIRGraphData } from '../data';
 import { ControlFlow } from './hir_control_flow';
 import { DetailGraph } from './hir_detail_graph';
 import { PassList } from './passlist';
+import { Network } from 'vis';
 import { Button, Icon } from 'semantic-ui-react';
 import SplitterLayout from 'react-splitter-layout';
 
 export interface IHIRProps {
   optimizedMethod: OptimizedMethod;
+  show: boolean;
 }
 
 export interface IHIRState {
@@ -19,6 +21,8 @@ export interface IHIRState {
 }
 
 export class HIR extends React.Component<IHIRProps, IHIRState> {
+  private _detailNetwork: Network;
+
   constructor(props: IHIRProps) {
     super(props);
     const firstHIRPass = props.optimizedMethod.passes.filter(p => p.hir != null)[0];
@@ -33,6 +37,7 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
     this._toggleShowBB = this._toggleShowBB.bind(this);
     this._toggleShowPasses = this._toggleShowPasses.bind(this);
     this._toggleShowEdgeLabels = this._toggleShowEdgeLabels.bind(this);
+    this._onSelectBB = this._onSelectBB.bind(this);
   }
 
   private _setSelectedPass(newSelectedPass: Pass): void {
@@ -46,8 +51,15 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   private _toggleShowEdgeLabels = () => {
     this.setState((prevState) => ({ ...prevState, showEdgeLabels: !this.state.showEdgeLabels }));
   }
+  private _onSelectBB = (selectedBB: number, network: Network) => {
+    // console.log('selected bb: ' + selectedBB);
+    this._detailNetwork.selectNodes([selectedBB]);
+  }
 
   render() {
+    if (!this.props.show) {
+      return null;
+    }
     const passList = this.state.showPasses
       ? <PassList passes={this.props.optimizedMethod.passes} handleClick={(pass: Pass) => this._setSelectedPass(pass)} ignorePrinterPasses={true}
         showPass={ (pass: Pass) => {
@@ -69,11 +81,13 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
               <div>
                 <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
                   onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
-                  networkGraphStyle={{ height: '1024px' }} />
+                  networkGraphStyle={{ height: '1024px' }}
+                  onSelectBB= {(selectedBB: number) => this._onSelectBB(selectedBB, this._detailNetwork)} />
               </div>
               <div>
                 <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.showAdjacentNodeDistance}
-                  networkGraphStyle={{ height: '1024px' }} />
+                  networkGraphStyle={{ height: '1024px' }}
+                  getVisNetwork={ (network) => { this._detailNetwork = network; } } />
               </div>
             </SplitterLayout>
           </div>

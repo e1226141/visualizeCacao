@@ -5,10 +5,14 @@ import { Segment, Header, Table } from 'semantic-ui-react';
 
 export interface IPassStatisticsProps {
   optimizedMethod: OptimizedMethod;
+  show: boolean;
 }
 
 export class PassStatistics extends React.Component<IPassStatisticsProps, {}> {
   render() {
+    if (!this.props.show) {
+      return null;
+    }
     const totalTime = this.props.optimizedMethod.passes.map(pass => pass.time).reduce((pv, cv) => pv + cv, 0);
     const returnType = this.getReturnType(this.props.optimizedMethod.desc);
     const parameterTypes = this.getParameterTypes(this.props.optimizedMethod.desc);
