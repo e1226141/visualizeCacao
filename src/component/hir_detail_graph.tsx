@@ -264,7 +264,6 @@ class DetailGraphBuilder extends HirGraphBuilder {
       if (sNode && tNode) {
         const sourceNode = sNode.getNode();
         index = ': ' + tNode.getNode().operands.findIndex(operandId => operandId == sourceNode.id);
-        console.log('operands: ' + tNode.getNode().operands);
       }
       e.label = 'op' + index;
     };
@@ -370,7 +369,6 @@ class DetailGraphBuilder extends HirGraphBuilder {
 
 class NodeSelector extends NodeSelectorHelper {
   public getNodesForSelection(networkRef: Network, selectedNode: any, allNodes: vis.Node[]): vis.Node[] {
-    console.log('using custom HIR node selector');
     const nodes = super.getNodesForSelection(networkRef, selectedNode, allNodes);
     nodes.forEach(n => this.getConnectedVisNodes(networkRef, n.id, allNodes).forEach(connNode => nodes.push(connNode)));
     return nodes;

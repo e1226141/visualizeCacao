@@ -172,7 +172,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
               getVisNetwork={ (network) => { this._cfgNetwork = network; } }
-              nodeSelector={this.nodeSelector} />
+              nodeSelector={this._nodeSelector} />
           </div>
           <Portal onClose={this._onHideLegend} open={this.state.showLegend}
             closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
@@ -289,7 +289,6 @@ class CfgGraphBuilder extends HirGraphBuilder {
 
 class NodeSelector extends NodeSelectorHelper {
   public getNodesForSelection(networkRef: Network, selectedNode: any, allNodes: vis.Node[]): vis.Node[] {
-    console.log('using custom HIR node selector');
     const nodes = super.getNodesForSelection(networkRef, selectedNode, allNodes);
     nodes.forEach(n => this.getConnectedVisNodes(networkRef, n.id, allNodes).forEach(connNode => nodes.push(connNode)));
     return nodes;
