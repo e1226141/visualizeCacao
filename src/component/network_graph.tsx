@@ -11,6 +11,7 @@ export interface INetworkGraphProps {
   getVisNetwork?: (network: Network) => void;  // expose the vis.js network
   getNodeBlock?: (node: Node) => string; // optional method to group nodes into blocks (like ie. a BasicBlock in HIR)
   nodeSelector?: NodeSelectorHelper;
+  getNetworkGraph?: (network: NetworkGraph) => void;  // expose the NetworkGraph
 }
 
 export interface INetworkGraphState {
@@ -36,6 +37,8 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this._elk = new ELK();
     this.createGraph = this.createGraph.bind(this);
     this.computeCoordinates = this.computeCoordinates.bind(this);
+    this.showSurroundingNodes = this.showSurroundingNodes.bind(this);
+
     this._initialPositions = new Map();
     this._viewport = new ViewPort(0.5, new Position(0, 0));
     if (this.props.nodeSelector == undefined) {
@@ -85,48 +88,50 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     if (this.props.getVisNetwork) {
       this.props.getVisNetwork(this._network);
     }
+    if (this.props.getNetworkGraph) {
+      this.props.getNetworkGraph(this);
+    }
+    this._network.on('doubleClick', (params) => this.showSurroundingNodes(params.nodes));
+  }
 
-    const networkRef = this._network;
+  public showSurroundingNodes(selectedNodes: number[]) {
     let highlightActive = this.state.highlightActive;
     const allNodes = this._nodes.get({returnType: 'Object'});
-    let _this = this;
 
-    this._network.on('doubleClick', function (params) {
-      if (params.nodes.length > 0) {
-        if (!highlightActive) {
-          _this.storeViewPort();
-        }
-        highlightActive = true;
-
-        // hide all nodes and reset those which should stay visible
-        for (let nodeId in allNodes) {
-          allNodes[nodeId].hidden = true;
-        }
-        if (params.nodes.length > 0) {
-          for (const selectedNode of params.nodes) {
-            const nodesToShow = _this._nodeSelector.getNodesForSelection(networkRef, selectedNode, allNodes);
-            nodesToShow.forEach(n => n.hidden = false);
-          }
-        }
-
-      // show all nodes
-      } else if (highlightActive === true) {
-        for (let nodeId in allNodes) {
-          allNodes[nodeId].hidden = false;
-        }
-        highlightActive = false;
+    if (selectedNodes.length > 0) {
+      if (!highlightActive) {
+        this.storeViewPort();
       }
+      highlightActive = true;
 
-      _this.setState((prevState) => ({ ...prevState, highlightActive: highlightActive }));
-
-      // transform the object into an array
-      const updateArray = [];
+      // hide all nodes and reset those which should stay visible
       for (let nodeId in allNodes) {
-          updateArray.push(allNodes[nodeId]);
+        allNodes[nodeId].hidden = true;
       }
-      graphContent.nodes.update(updateArray);
-      _this.computeCoordinates(() => {}, /*restoreInitialPositions*/ highlightActive === false);
-    });
+      if (selectedNodes.length > 0) {
+        for (const selectedNode of selectedNodes) {
+          const nodesToShow = this._nodeSelector.getNodesForSelection(this._network, selectedNode, allNodes);
+          nodesToShow.forEach(n => n.hidden = false);
+        }
+      }
+
+    // show all nodes
+    } else if (highlightActive === true) {
+      for (let nodeId in allNodes) {
+        allNodes[nodeId].hidden = false;
+      }
+      highlightActive = false;
+    }
+
+    this.setState((prevState) => ({ ...prevState, highlightActive: highlightActive }));
+
+    // transform the object into an array
+    const updateArray = [];
+    for (let nodeId in allNodes) {
+        updateArray.push(allNodes[nodeId]);
+    }
+    this._nodes.update(updateArray);
+    this.computeCoordinates(() => {}, /*restoreInitialPositions*/ highlightActive === false);
   }
 
   shouldComponentUpdate(nextProps: INetworkGraphProps) {

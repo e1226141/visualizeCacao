@@ -3,7 +3,7 @@ import { OptimizedMethod, Pass, HIRGraphData } from '../data';
 import { ControlFlow } from './hir_control_flow';
 import { DetailGraph } from './hir_detail_graph';
 import { PassList } from './passlist';
-import { Network } from 'vis';
+import { NetworkGraph } from './network_graph';
 import { Button, Icon } from 'semantic-ui-react';
 import SplitterLayout from 'react-splitter-layout';
 
@@ -21,7 +21,7 @@ export interface IHIRState {
 }
 
 export class HIR extends React.Component<IHIRProps, IHIRState> {
-  private _detailNetwork: Network;
+  private _detailNetworkGraph: NetworkGraph;
 
   constructor(props: IHIRProps) {
     super(props);
@@ -51,9 +51,9 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
   private _toggleShowEdgeLabels = () => {
     this.setState((prevState) => ({ ...prevState, showEdgeLabels: !this.state.showEdgeLabels }));
   }
-  private _onSelectBB = (selectedBB: number, network: Network) => {
-    // console.log('selected bb: ' + selectedBB);
-    this._detailNetwork.selectNodes([selectedBB]);
+  private _onSelectBB = (selectedBB: number) => {
+    // network.selectNodes([selectedBB]);
+    this._detailNetworkGraph.showSurroundingNodes([selectedBB]);
   }
 
   render() {
@@ -82,12 +82,12 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
                 <ControlFlow pass={this.state.selectedPass} showBB={this.state.showBB} showEdgeLabels={this.state.showEdgeLabels}
                   onClickShowEdgeLabels={this._toggleShowEdgeLabels} onClickShowBB={this._toggleShowBB}
                   networkGraphStyle={{ height: '1024px' }}
-                  onSelectBB= {(selectedBB: number) => this._onSelectBB(selectedBB, this._detailNetwork)} />
+                  onSelectBB= {(selectedBB: number) => this._onSelectBB(selectedBB)} />
               </div>
               <div>
                 <DetailGraph pass={this.state.selectedPass} showAdjacentNodeDistance={this.state.showAdjacentNodeDistance}
                   networkGraphStyle={{ height: '1024px' }}
-                  getVisNetwork={ (network) => { this._detailNetwork = network; } } />
+                  getNetworkGraph={ (networkGraph) => { this._detailNetworkGraph = networkGraph } } />
               </div>
             </SplitterLayout>
           </div>

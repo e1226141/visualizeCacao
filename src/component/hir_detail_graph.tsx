@@ -11,7 +11,7 @@ export interface IDetailGraphProps {
   pass: Pass;
   showAdjacentNodeDistance: number;
   networkGraphStyle: React.CSSProperties;
-  getVisNetwork?: (network: Network) => void;  // expose the vis.js network
+  getNetworkGraph?: (network: NetworkGraph) => void;  // expose the NetworkGraph
 }
 
 export interface IDetailGraphState {
@@ -202,10 +202,10 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
         <div id='detailNetwork'>
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
-              getVisNetwork={ (network) => { 
-                this._detailNetwork = network;
-                if (this.props.getVisNetwork) {
-                    this.props.getVisNetwork(this._detailNetwork);
+              getVisNetwork={ (network) => { this._detailNetwork = network } }
+              getNetworkGraph={ (networkGraph) => { 
+                if (this.props.getNetworkGraph) {
+                    this.props.getNetworkGraph(networkGraph);
                   }
               } }            
               getNodeBlock={ (n: Node) => { return n.internalGroup ? n.internalGroup : n.id; } }

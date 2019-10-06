@@ -129,7 +129,9 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     const events = {
       select: function (event: any) {
         let { nodes } = event;
-        onSelectBB(nodes);
+        if (nodes.length > 0) {
+          onSelectBB(nodes);
+        }
       }
     };
     const statisticsLabel = this.props.showBB ? 'BB' : 'cfg-inst';
