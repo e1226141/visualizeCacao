@@ -30,6 +30,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
     };
     this._onShowLegend = this._onShowLegend.bind(this);
     this._onHideLegend = this._onShowLegend.bind(this);
+    this._onDownload = this._onDownload.bind(this);
   }
 
   private _getDefaultOptions(): JSON {
@@ -98,6 +99,13 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
 
   private _onShowLegend = () => this.setState({ showLegend: !this.state.showLegend });
   private _onHideLegend = () => this.setState({ showLegend: false });
+  private _onDownload = () => {
+    const canvas: HTMLCanvasElement = this._cfgNetwork.canvas.frame.canvas;
+    const link = document.createElement('a');
+    link.download = 'cfg.jpg';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
 
   render() {
     const hir: HIRGraphData | undefined = this.props.pass.hir;
@@ -144,6 +152,8 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
                 <Popup trigger={<Checkbox label='T/F branches' checked={this.props.showEdgeLabels}
                   onClick={() => this.props.onClickShowEdgeLabels()} style={{paddingRight: '20px'}} />}
                   content='display true/false branches'/>
+                <Popup trigger={<Icon name='download' size='big' onClick={this._onDownload} />}
+                  content='download a screenshot of the CFG'/>                  
                 <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
                   content='displays the legend of the cfg network graph'/>
               </div>

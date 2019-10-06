@@ -43,6 +43,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
     this._toggleHideScheduleEdges = this._toggleHideScheduleEdges.bind(this);
     this._onShowLegend = this._onShowLegend.bind(this);
     this._onHideLegend = this._onHideLegend.bind(this);
+    this._onDownload = this._onDownload.bind(this);
   }
 
   private _toggleShowOnlyEnabledPasses =
@@ -57,6 +58,13 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
     () => this.setState((prevState) => ({ ...prevState, hideScheduleEdges: !prevState.hideScheduleEdges }))
   private _onShowLegend = () => this.setState( (prevState) => ({...prevState, showLegend: !this.state.showLegend }));
   private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
+  private _onDownload = () => {
+    const canvas: HTMLCanvasElement = this._detailNetwork.canvas.frame.canvas;
+    const link = document.createElement('a');
+    link.download = 'PassDependency.jpg';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
 
   render() {
     const passDependencyGraph: PassDependencyGraphData | undefined = this.props.optimizedMethod.passDependencyGraph;
@@ -97,9 +105,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
       <div>
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
             <Segment floated='left' horizontal='true'>
-              <Segment.Inline>                  
-                  <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
-                    content='displays the legend of the detail network graph'/>
+              <Segment.Inline>
                   <Popup trigger={<Checkbox label='only enabled passes'
                     checked={this.state.showOnlyEnabledPasses} onClick={() => this._toggleShowOnlyEnabledPasses()}
                     className='selection-checkbox'/>} content='hides all passes have not been enabled' className='selection-label'/>
@@ -115,6 +121,10 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
                   <Popup trigger={<Checkbox label='hide schedule'
                     checked={this.state.hideScheduleEdges} onClick={() => this._toggleHideScheduleEdges()}
                     className='selection-checkbox'/>} content='hides all "schedule*" edges' className='selection-label'/>
+                  <Popup trigger={<Icon name='download' size='big' onClick={this._onDownload} />}
+                    content='download a screenshot of the dependency graph'/>
+                  <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
+                    content='displays the legend of the dependency graph'/>
                   <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} className='node-search-box'/>
               </Segment.Inline>
             </Segment>

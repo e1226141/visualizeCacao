@@ -34,6 +34,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
 
     this._toggleHideSourceStates = this._toggleHideSourceStates.bind(this);
     this._toggleHideSchedulingEdges = this._toggleHideSchedulingEdges.bind(this);
+    this._onDownload = this._onDownload.bind(this);
   }
 
   private _toggleHideSourceStates =
@@ -127,6 +128,13 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
 
   private _onShowLegend = () => this.setState( (prevState) => ({...prevState, showLegend: !this.state.showLegend }));
   private _onHideLegend = () => this.setState( (prevState) => ({...prevState,  showLegend: false }));
+  private _onDownload = () => {
+    const canvas: HTMLCanvasElement = this._detailNetwork.canvas.frame.canvas;
+    const link = document.createElement('a');
+    link.download = 'HIR.jpg';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
 
   render() {
     const hir: HIRGraphData | undefined = this.props.pass.hir;
@@ -174,9 +182,11 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
                     className='selection-checkbox'/>} content='hides all source state instructions' className='selection-checkbox'/>
                 <Popup trigger={<Checkbox label='hide scheduling edges'
                     checked={this.state.hideSchedulingEdges} onClick={() => this._toggleHideSchedulingEdges()}
-                    className='selection-checkbox'/>} content='hides all scheduling edges' className='selection-checkbox'/>
+                    className='selection-checkbox'/>} content='hides all scheduling edges' className='selection-checkbox'/>      
+                <Popup trigger={<Icon name='download' size='big' onClick={this._onDownload} />}
+                  content='download a screenshot of the HIR'/>
                 <Popup trigger={<Icon name='info circle' size='big' onClick={this._onShowLegend} />}
-                  content='displays the legend of the detail network graph'/>            
+                  content='displays the legend of the detail network graph'/>      
               </div>
               <NodeSearch graph={graph} valueSelectedHandler={searchValueSelected} style={{paddingRight: '20px', width: '100%'}} />
           </Segment>

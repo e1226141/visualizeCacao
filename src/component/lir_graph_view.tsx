@@ -4,7 +4,7 @@ import { NetworkGraph } from './network_graph';
 import { DisplayNode, DisplayEdge, GraphBuilder } from '../graph_builder';
 import { NodeSearch } from './node_search';
 import { Network } from 'vis';
-import { Segment, Statistic, Popup } from 'semantic-ui-react';
+import { Segment, Statistic, Popup, Icon } from 'semantic-ui-react';
 
 export interface ILirGraphViewProps {
   pass: Pass;
@@ -20,6 +20,7 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
   constructor(props: ILirGraphViewProps) {
     super(props);
     this.state = {};
+    this._onDownload = this._onDownload.bind(this);
   }
 
   private _getDefaultOptions(): JSON {
@@ -67,6 +68,14 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
     return options as JSON;
   }
 
+  private _onDownload = () => {
+    const canvas: HTMLCanvasElement = this._lirNetwork.canvas.frame.canvas;
+    const link = document.createElement('a');
+    link.download = 'LIR.jpg';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
   render() {
     const lir: LIRGraphData | undefined = this.props.pass.lir;
     if (!lir) {
@@ -98,7 +107,11 @@ export class LirGraphView extends React.Component<ILirGraphViewProps, {}> {
       <div>
         <Segment.Group horizontal raised style={{ padding: 0, margin: 0 }} id='lirGraphSearchBar'>
           <Segment floated='left' compact>
-            <NodeSearch graph={graph} valueSelectedHandler={lirSearchValueSelected} style={{ paddingRight: '20px', width: '100%' }} />
+            <Segment.Inline>
+              <Popup trigger={<Icon name='download' size='big' onClick={this._onDownload} />}
+                      content='download a screenshot of LIR'/>
+              <NodeSearch graph={graph} valueSelectedHandler={lirSearchValueSelected} style={{ paddingRight: '20px', width: '100%' }} />
+            </Segment.Inline>
           </Segment>
           <Segment floated='right' compact size='mini'>
             <Popup trigger={
