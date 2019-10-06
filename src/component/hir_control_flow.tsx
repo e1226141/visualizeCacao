@@ -22,6 +22,7 @@ export interface IControlFlowState {
 
 export class ControlFlow extends React.Component<IControlFlowProps, IControlFlowState> {
   private _cfgNetwork: Network;
+  private _nodeSelector = new NodeSelector();
 
   constructor(props: IControlFlowProps) {
     super(props);
@@ -140,9 +141,6 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
       this._cfgNetwork.selectNodes( [id] );
       this._cfgNetwork.focus(id, { scale: 1.0 });
     };
-
-    const nodeSelector = new NodeSelector();
-
     return (
       <div>
           <Segment.Group horizontal raised style={{padding: 0, margin: 0}}>
@@ -174,7 +172,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
               getVisNetwork={ (network) => { this._cfgNetwork = network; } }
-              nodeSelector={nodeSelector} />
+              nodeSelector={this.nodeSelector} />
           </div>
           <Portal onClose={this._onHideLegend} open={this.state.showLegend}
             closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>

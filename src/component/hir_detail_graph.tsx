@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Pass, HIRNode, HIRNodeType, HIREdge, HIREdgeType, HIRGraphData } from '../data';
 import { HirGraphBuilder } from './hir_base';
 import { DisplayNode, DisplayEdge } from '../graph_builder';
-import { NetworkGraph } from './network_graph';
+import { NetworkGraph, NodeSelectorHelper } from './network_graph';
 import { NodeSearch } from './node_search';
 import { Network, Node} from 'vis';
 import { Segment, Statistic, Popup, Portal, Grid, Message, Icon, Checkbox} from 'semantic-ui-react';
@@ -22,6 +22,7 @@ export interface IDetailGraphState {
 
 export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraphState> {
   private _detailNetwork: Network;
+  private _nodeSelector = new NodeSelector();
 
   constructor(props: IDetailGraphProps) {
     super(props);
@@ -203,7 +204,8 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
           <div className='vis-network' width='100%'>
             <NetworkGraph graph={graph} options={options} events={events} style={this.props.networkGraphStyle}
               getVisNetwork={ (network) => { this._detailNetwork = network; } }
-              getNodeBlock={ (n: Node) => { return n.internalGroup ? n.internalGroup : n.id; } } />
+              getNodeBlock={ (n: Node) => { return n.internalGroup ? n.internalGroup : n.id; } }
+              nodeSelector={this._nodeSelector} />
           </div>
               <Portal onClose={this._onHideLegend} open={this.state.showLegend}
                 closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
@@ -247,6 +249,25 @@ class DetailGraphBuilder extends HirGraphBuilder {
     }
     this._hideSchedulingEdges = hideSchedulingEdges;
     this.init(nodes, edges);
+
+    this._edges.filter(e => e.getEdge().edgeType == HIREdgeType.op).forEach(this.getOperandEdgeLabelWithIndex());
+  }
+
+  /**
+   * add the operand index for the target node to the edge label.
+   */
+  private getOperandEdgeLabelWithIndex(): (value: DisplayEdge<HIREdge>, index: number, array: DisplayEdge<HIREdge>[]) => void {
+    return e => {
+      const sNode = this._displayNodeMap.get(e.from);
+      const tNode = this._displayNodeMap.get(e.to);
+      let index = '';
+      if (sNode && tNode) {
+        const sourceNode = sNode.getNode();
+        index = ': ' + tNode.getNode().operands.findIndex(operandId => operandId == sourceNode.id);
+        console.log('operands: ' + tNode.getNode().operands);
+      }
+      e.label = 'op' + index;
+    };
   }
 
   protected toDisplayNode(node: HIRNode): DisplayNode<HIRNode> {
@@ -344,5 +365,14 @@ class DetailGraphBuilder extends HirGraphBuilder {
       'edges': JSON.parse(JSON.stringify(edges))
     };
     return graph as JSON;
+  }
+}
+
+class NodeSelector extends NodeSelectorHelper {
+  public getNodesForSelection(networkRef: Network, selectedNode: any, allNodes: vis.Node[]): vis.Node[] {
+    console.log('using custom HIR node selector');
+    const nodes = super.getNodesForSelection(networkRef, selectedNode, allNodes);
+    nodes.forEach(n => this.getConnectedVisNodes(networkRef, n.id, allNodes).forEach(connNode => nodes.push(connNode)));
+    return nodes;
   }
 }
