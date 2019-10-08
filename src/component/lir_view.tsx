@@ -30,6 +30,10 @@ export class LIRView extends React.Component<ILIRViewProps, ILIRViewState> {
     if (!this.props.show) {
       return null;
     }
+    if (this.props.optimizedMethod.passes.filter(pass => pass.lir != null).length == 0) {
+      return (<div>no passes contain a LIR</div>);
+    }
+
     const tabpanes = [
       { menuItem: 'Graph', render: () =>
         <Tab.Pane>

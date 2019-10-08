@@ -213,7 +213,7 @@ export class DetailGraph extends React.Component<IDetailGraphProps, IDetailGraph
           </div>
               <Portal onClose={this._onHideLegend} open={this.state.showLegend}
                 closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
-                <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }} >
+                <Segment style={{ left: '25%', width: '25%', position: 'fixed', top: '10%', zIndex: 1000 }} >
                     <Grid>
                       <Grid.Row columns={2}>
                         <Grid.Column>
@@ -352,16 +352,22 @@ class DetailGraphBuilder extends HirGraphBuilder {
 
   toJSONGraphLegend (): JSON {
     const nodes = [
-      {id: 1, label: 'BB', level: 0, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst, false), title: 'basic block with "GOTO" as EndInst'},
-      {id: 2, label: 'IF', level: 1, color: this.getNodeBackgroundColor(HIRNodeType.IFInst, false), title: 'basic block with an "IF" as EndInst'},
-      {id: 3, label: 'BB', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.GOTOInst, false), title: 'basic block with an "GOTO" as EndInst'},
-      {id: 4, label: 'Return', level: 2, color: this.getNodeBackgroundColor(HIRNodeType.RETURNInst, false), title: 'basic block with an "RETURN" as EndInst'}
+      {id: 1, label: '[0]: BeginInst', level: 0, group: 2, borderWidth: 3, title: 'basic block with "IF" statement as EndInst'},
+      {id: 2, label: '[5]: IFInst [#9 >= #4]', level: 2, group: 2, borderWidth: 3, title: 'IFInst end-instruction at the end of basic block [0]'},
+      {id: 3, label: '[1]: BeginInst', level: 3, group: 3, borderWidth: 3, title: 'basic block with an "RETURN" as last instruction'},
+      {id: 4, label: '[8]: ReturnInst', level: 4, group: 3, borderWidth: 3, title: 'Return Instruction at the end of basic block [1]'},
+      {id: 5, label: '[9]: ConstInst: 1', level: 1, group: 0, borderWidth: 2,
+        shapeProperties: { 'borderDashes': [5, 5] }, title: 'a floating instruction is not assigned to any basic block'},
+      {id: 6, label: '[3]: BeginInst', level: 3, group: 5, borderWidth: 3, title: 'basic block with "GOTO" as EndInst'},
+      {id: 7, label: '[4]: PHIInst', level: 1, group: 2, borderWidth: 3, title: 'PHI statement belonging to basic block 2'}
     ];
     const edges = [
-      {from: 1, to: 2, color: {color: '#87B2EC'}},
-      {from: 2, to: 4, label: 'T', color: {color: '#5aa52b'}, title: 'true branch of an if statement'},
-      {from: 2, to: 3, label: 'F', color: {color: '#7C29F0'}, title: 'false branch of an if statement'},
-      {from: 3, to: 2, title: 'backedge', color: {color: '#EE0000'}}
+      {from: 1, to: 2, label: 'bb', color: {color: '#000000'}, dashes: true},
+      {from: 3, to: 4, label: 'bb', color: {color: '#000000'}, dashes: true},
+      {from: 2, to: 3, label: 'T', color: {color: '#5aa52b'}, title: 'true branch of an if statement'},
+      {from: 2, to: 6, label: 'F', color: {color: '#7C29F0'}, title: 'false branch of an if statement'},
+      {from: 5, to: 2, label: 'op: 0', color: {color: '#808080'}, title: 'first operand of the IF Statement'},
+      {from: 7, to: 2, label: 'op: 1', color: {color: '#808080'}, title: 'second operand of the IF Statement'},
     ];
     let graph: any = {
       'nodes': JSON.parse(JSON.stringify(nodes)),
@@ -369,6 +375,7 @@ class DetailGraphBuilder extends HirGraphBuilder {
     };
     return graph as JSON;
   }
+
 }
 
 class NodeSelector extends NodeSelectorHelper {

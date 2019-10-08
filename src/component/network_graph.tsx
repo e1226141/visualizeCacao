@@ -94,6 +94,10 @@ export class NetworkGraph extends React.Component<INetworkGraphProps, INetworkGr
     this._network.on('doubleClick', (params) => this.showSurroundingNodes(params.nodes));
   }
 
+  public selectNodes(nodeIds: number[]) {
+    this._network.selectNodes(nodeIds);
+  }
+
   public showSurroundingNodes(selectedNodes: number[]) {
     let highlightActive = this.state.highlightActive;
     const allNodes = this._nodes.get({returnType: 'Object'});

@@ -148,7 +148,7 @@ export class PassDependencyGraph extends React.Component<IPassDependencyProps, I
             </div>
             <Portal onClose={this._onHideLegend} open={this.state.showLegend}
               closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
-              <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }} >
+              <Segment style={{ left: '25%', width: '25%', position: 'fixed', top: '10%', zIndex: 1000 }} >
                   <Grid>
                     <Grid.Row columns={2}>
                       <Grid.Column>
@@ -334,26 +334,6 @@ class DetailGraphBuilder
     result.setColor(this._getEdgeColor(edge.edgeType));
     return result;
   }
-  private _getEdgeLabel(edgeType: GraphDependencyEdgeType): string {
-    switch (edgeType) {
-      case GraphDependencyEdgeType.provides:
-        return 'provides';
-      case GraphDependencyEdgeType.modifies:
-        return 'modifies';
-      case GraphDependencyEdgeType.requires:
-        return 'requires';
-      case GraphDependencyEdgeType.scheduleAfter:
-        return 'schedule-after';
-      case GraphDependencyEdgeType.scheduleBefore:
-        return 'schedule-before';
-      case GraphDependencyEdgeType.scheduleImmediateBefore:
-        return 'schedule-imm-before';
-      case GraphDependencyEdgeType.scheduleImmediateAfter:
-        return 'schedule-imm-before';
-      default:
-        return 'unknown';
-    }
-  }
 
   private _getEdgeColor(edgeType: GraphDependencyEdgeType): string {
     switch (edgeType) {
@@ -369,5 +349,25 @@ class DetailGraphBuilder
       default:
         return '#A9A9A9';
     }
+  }
+
+  toJSONGraphLegend (): JSON {
+    const nodes = [
+      {id: 1, label: 'Pass', level: 1, color: '#87CEEB', title: 'a pass'},
+      {id: 2, label: 'Pass and Artefact', level: 2, color: '#BA55D3', title: 'a pass with is also an artefact'},
+      {id: 3, label: 'Artefact', level: 0, color: '#8FBC8F', title: 'artefact'},
+      {id: 4, label: 'disabled Pass', level: 2, color: '#DCDCDC', shapeProperties: { 'borderDashes': [5, 5] }, title: 'a pass which is not enabled and therefore will not be executed'}
+    ];
+    const edges = [
+      {from: 1, to: 2, color: {color: '#DC143C'}, title: 'this pass/artefact will be modifies by this artefact'},
+      {from: 2, to: 3, label: 'requires', color: {color: '#A9A9A9'}, title: 'this pass/artefact is required'},
+      {from: 1, to: 3, label: 'schedule-before', color: {color: '#7C29F0'}, title: 'will be scheduled before this pass'},
+      {from: 1, to: 4, label: 'modifies', color: {color: '#DC143C'}, title: 'false branch of an if statement'},
+    ];
+    let graph: any = {
+      'nodes': JSON.parse(JSON.stringify(nodes)),
+      'edges': JSON.parse(JSON.stringify(edges))
+    };
+    return graph as JSON;
   }
 }

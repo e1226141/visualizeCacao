@@ -52,7 +52,9 @@ export class HIR extends React.Component<IHIRProps, IHIRState> {
     this.setState((prevState) => ({ ...prevState, showEdgeLabels: !this.state.showEdgeLabels }));
   }
   private _onSelectBB = (selectedBB: number) => {
-    // network.selectNodes([selectedBB]);
+    if (selectedBB && selectedBB != '') {
+      this._detailNetworkGraph.selectNodes([selectedBB]);
+    }
     this._detailNetworkGraph.showSurroundingNodes([selectedBB]);
   }
 

@@ -75,15 +75,27 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
 
   private _getOptionsForLegend(): JSON {
     let options: any = {
-      nodes: { shape: 'box' },
+      nodes: {
+        shape: 'box',
+        borderWidthSelected: 4
+      },
       edges: {
-        arrows: { 'to': { 'enabled': true } },
-        color: {inherit: false },
+        arrows: {
+          'to': {
+            'enabled': true
+          }
+        },
+        color: {
+          inherit: false
+        },
         smooth: {
           enabled: true,
-          type: 'discrete'
+          type: 'straightCross'
         },
-        chosen: false
+        font: {
+          align: 'top'
+        },
+        selectionWidth: 3
       },
       layout: {
         improvedLayout: true,
@@ -177,7 +189,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
           </div>
           <Portal onClose={this._onHideLegend} open={this.state.showLegend}
             closeOnDocumentClick={false} closeOnPortalMouseLeave={false}>
-            <Segment style={{ left: '30%', position: 'fixed', top: '10%', zIndex: 1000 }} >
+            <Segment style={{ left: '25%', width: '25%', position: 'fixed', top: '10%', zIndex: 1000 }} >
                 <Grid>
                   <Grid.Row columns={2}>
                     <Grid.Column>
@@ -192,7 +204,7 @@ export class ControlFlow extends React.Component<IControlFlowProps, IControlFlow
                   </Grid.Row>
                   <Grid.Row columns={1} stretched>
                     <Grid.Column>
-                      <NetworkGraph graph={legend} options={legendOptions} style={{ width: '400px', height: '300px' }} />
+                      <NetworkGraph graph={legend} options={legendOptions} />
                     </Grid.Column>
                   </Grid.Row>
                 </Grid>
