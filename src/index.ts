@@ -8,7 +8,7 @@ import { OptimizedMethod } from './data';
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | null = null;
 
-let defaultFileName = 'xyz.json';
+let defaultFileName = 'example.json';
 const isDevMode = process.execPath.match(/[\\/]electron/);
 
 if (isDevMode) {
@@ -189,10 +189,10 @@ const createWindow = async function (fileName: string) {
   mainWindow.loadURL(`file://${__dirname}/index.html`);
 
   // Open the DevTools.
-  if (isDevMode) {
-    await installExtension(REACT_DEVELOPER_TOOLS);
+  /*if (isDevMode) {
+    wait installExtension(REACT_DEVELOPER_TOOLS);
     mainWindow.webContents.openDevTools();
-  }
+  }*/
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
