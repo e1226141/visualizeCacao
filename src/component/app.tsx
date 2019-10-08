@@ -4,6 +4,7 @@ import { LIRView } from './lir_view';
 import { OptimizedMethod } from '../data';
 import { PassDependencyGraph } from './pass_dependency_graph';
 import { PassStatistics } from './pass_statistics';
+import { EmittedCode } from './emitted_code';
 import { Navigation, PageType } from './navigation';
 import SplitterLayout from 'react-splitter-layout';
 
@@ -34,6 +35,7 @@ export class App extends React.Component<AppProps, AppState> {
           <PassStatistics optimizedMethod={this.props.optimizedMethod} show={this.state.pageType == PageType.MAIN} />
           <HIR optimizedMethod={this.props.optimizedMethod} show={this.state.pageType == PageType.HIR} />
           <LIRView optimizedMethod={this.props.optimizedMethod} show={this.state.pageType == PageType.LIR} />
+          <EmittedCode optimizedMethod={this.props.optimizedMethod} show={this.state.pageType == PageType.CODE_GEN} />
           <PassDependencyGraph optimizedMethod={this.props.optimizedMethod} show={this.state.pageType == PageType.PASS_DEPENDENCY} />
         </div>
       </SplitterLayout>

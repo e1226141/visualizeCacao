@@ -254,6 +254,7 @@ export class OptimizedMethod implements Serializable<OptimizedMethod> {
     desc: string;
     passDependencyGraph: PassDependencyGraphData;
     passes: Pass[];
+    asm: string;
 
     fromJSON(input: any) {
       this.class = input.class;
@@ -261,6 +262,7 @@ export class OptimizedMethod implements Serializable<OptimizedMethod> {
       this.desc = input.desc;
       this.passDependencyGraph = new PassDependencyGraphData().fromJSON(input.passDependencyGraph);
       this.passes = input.passes.map((pass: any, index: number) => new Pass(index).fromJSON(pass));
+      this.asm = '';
       return this;
     }
 }

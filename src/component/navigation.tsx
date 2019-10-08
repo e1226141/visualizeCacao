@@ -6,7 +6,8 @@ export enum PageType {
   MAIN,
   HIR,
   LIR,
-  PASS_DEPENDENCY
+  PASS_DEPENDENCY,
+  CODE_GEN
 }
 
 export interface INavigationProps {
@@ -26,6 +27,10 @@ export class Navigation extends React.Component<INavigationProps, {}> {
         </Button>
         <Button onClick={() => this.props.onSelectPage(PageType.LIR)} active={PageType.LIR == this.props.selectedPage}>
           <Icon name='code' size='big' title='show LIR'/>
+        </Button>
+        <Button onClick={() => this.props.onSelectPage(PageType.CODE_GEN)}
+          active={PageType.CODE_GEN == this.props.selectedPage}>
+          <Icon name='file code' size='big' title='show emitted code'/>
         </Button>
         <Button onClick={() => this.props.onSelectPage(PageType.PASS_DEPENDENCY)}
           active={PageType.PASS_DEPENDENCY == this.props.selectedPage}>

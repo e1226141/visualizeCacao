@@ -143,7 +143,7 @@ function getMatchingBracket(ch: string) {
 function readFile(fileName: string): OptimizedMethod {
   console.log('readFile: ' + JSON.stringify(fileName));
   let data = fs.readFileSync(fileName, 'utf8');
-  console.log('file size: ' + data.length);
+  // console.log('file size: ' + data.length);
   let jsonData = '';
   try {
     jsonData = JSON.parse(data);
@@ -157,7 +157,21 @@ function readFile(fileName: string): OptimizedMethod {
       jsonData = JSON.parse(data + missingBrackets);
     }
   }
+
   let optimizedMethod = new OptimizedMethod().fromJSON(jsonData);
+
+  // try to find disassembler code
+  const disassemblyFilename = fileName + '.asm';
+  try {
+    console.log('trying to find asm file: ' + JSON.stringify(disassemblyFilename));
+    let asmData = fs.readFileSync(disassemblyFilename, 'utf8');
+    if (asmData && asmData.length > 0) {
+      console.log('asm file found: ' + disassemblyFilename);
+      optimizedMethod.asm = asmData;
+    }
+  } catch (e) {
+    console.log('no asm file found: ' + disassemblyFilename);
+  }
   return optimizedMethod;
 }
 

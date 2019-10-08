@@ -90,3 +90,26 @@
     padding-right: 20px;
     width: '100%';
 }
+
+.machine_code_table {
+    max-width: 600px;
+}
+
+.machine_code_mbb {
+    margin-top: 20px;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.machine_code_address {}
+
+.machine_code_bin {}
+
+.machine_code_instruction {
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.machine_code_operands {
+    font-style: italic;
+}
