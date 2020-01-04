@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell, dialog } from 'electron';
+import { app, BrowserWindow, Menu, shell, dialog, clipboard } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 import * as fs from 'fs';
@@ -25,6 +25,12 @@ function openFileDialog() {
   });
 }
 
+function loadFromClipboard() {
+  const parsedJson = parseJson(clipboard.readText());
+  mainWindow.optimizedMethod = new OptimizedMethod().fromJSON(parsedJson);
+  mainWindow.reload();
+}
+
 // initialize the menu
 const template = [
   {
@@ -35,7 +41,11 @@ const template = [
         accelerator: 'CmdOrCtrl+O',
         click: () => openFileDialog()
       },
-      {role: 'quit'},
+      {
+        label: 'Load from clipboard',
+        click: () => loadFromClipboard()
+      },
+      {role: 'quit'}
     ]
   },
   {
@@ -140,13 +150,9 @@ function getMatchingBracket(ch: string) {
   return '';
 }
 
-function readFile(fileName: string): OptimizedMethod {
-  console.log('readFile: ' + JSON.stringify(fileName));
-  let data = fs.readFileSync(fileName, 'utf8');
-  // console.log('file size: ' + data.length);
-  let jsonData = '';
+function parseJson(data: string){
   try {
-    jsonData = JSON.parse(data);
+    return JSON.parse(data);
   } catch (e) {
     console.log('cannot read file' + e);
     // check if brackets are missing in the file, this can easily happen during
@@ -154,10 +160,17 @@ function readFile(fileName: string): OptimizedMethod {
     const missingBrackets = readMissingBrackets(data);
     console.log('missingBrackets: ' + missingBrackets + '; filename: ' + fileName);
     if (missingBrackets.length > 0) {
-      jsonData = JSON.parse(data + missingBrackets);
+      return JSON.parse(data + missingBrackets);
     }
   }
+  return {};
+}
 
+function readFile(fileName: string): OptimizedMethod {
+  console.log('readFile: ' + JSON.stringify(fileName));
+  let data = fs.readFileSync(fileName, 'utf8');
+  // console.log('file size: ' + data.length);
+  let jsonData = parseJson(data);
   let optimizedMethod = new OptimizedMethod().fromJSON(jsonData);
 
   // try to find disassembler code
