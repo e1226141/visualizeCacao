@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell, dialog } from 'electron';
+import { app, BrowserWindow, Menu, shell, dialog, clipboard } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 import * as fs from 'fs';
@@ -25,6 +25,12 @@ function openFileDialog() {
   });
 }
 
+function loadFromClipboard() {
+  const parsedJson = JSON.parse(clipboard.readText());
+  mainWindow.optimizedMethod = new OptimizedMethod().fromJSON(parsedJson);
+  mainWindow.reload();
+}
+
 // initialize the menu
 const template = [
   {
@@ -35,7 +41,11 @@ const template = [
         accelerator: 'CmdOrCtrl+O',
         click: () => openFileDialog()
       },
-      {role: 'quit'},
+      {
+        label: 'Load from clipboard',
+        click: () => loadFromClipboard()
+      },
+      {role: 'quit'}
     ]
   },
   {
