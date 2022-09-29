@@ -61,7 +61,7 @@
         "semantic-ui-react": "^0.88.1",
         "tslib": "1.10.0",
         "uuid": "^3.3.3",
-        "victory": "^33.1.0",
+        "victory": "^36.6.8",
         "vis": "^4.21.0-EOL"
     },
     "devDependencies": {
